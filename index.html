@@ -1,0 +1,3505 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>古文風雲訣 v27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Noto+Serif+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root{
+    --font-brush:'Ma Shan Zheng','ZCOOL XiaoWei','Noto Serif TC','PingFang TC',cursive;
+    --font-body:'Noto Sans TC','PingFang TC','Microsoft JhengHei',sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#1a1f3a;font-family:var(--font-brush);color:#eef0ff}
+  #app{position:relative;width:100%;height:100%;overflow:hidden}
+
+  #loading-screen{position:fixed;inset:0;z-index:9999;background:#0b0c1a;display:none;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s ease}
+  #loading-screen.active{display:flex}
+  .spinner{width:50px;height:50px;border:4px solid rgba(109,91,255,.2);border-top-color:#6d5bff;border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{margin-top:16px;font-size:16px;font-weight:800;color:#8f9bd0;letter-spacing:2px;font-family:var(--font-body)}
+
+  #forest-scene{position:absolute;inset:0;z-index:10;display:none;overflow:hidden;background-color:#1a2a1a}
+  #forest-world{position:absolute;width:3000px;height:3000px;background-size:100% 100%;background-position:center;background-color:#5a9a3a;will-change:transform}
+
+  #player-wrap{
+    position:absolute;width:80px;height:80px;z-index:10;
+    filter:drop-shadow(0 12px 12px rgba(0,0,0,.45));
+    transform-origin:center bottom;pointer-events:none;user-select:none;
+    display:flex;align-items:center;justify-content:center;
+  }
+  #player-wrap img{width:100%;height:100%;object-fit:contain;display:none}
+  #player-emoji{font-size:64px;display:block}
+
+  #follower-wrap-0,#follower-wrap-1,#follower-wrap-2{
+    position:absolute;width:62px;height:62px;z-index:9;
+    filter:drop-shadow(0 8px 8px rgba(0,0,0,.45));
+    transform-origin:center bottom;pointer-events:none;user-select:none;
+    display:none;align-items:center;justify-content:center;
+  }
+  .follower-wrap img{width:100%;height:100%;object-fit:contain;display:none}
+  .follower-emoji{font-size:48px;display:block}
+
+  .screen{position:absolute;inset:0;z-index:100;display:none;flex-direction:column;background:linear-gradient(160deg,#2a3266,#3a4280);overflow-y:auto}
+  .screen.active{display:flex}
+  .screen-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:transparent;border-bottom:1px solid rgba(140,130,255,.12);flex-shrink:0}
+  .screen-header h2{margin:0;font-size:22px;font-weight:900;letter-spacing:2px;font-family:var(--font-brush)}
+  .back-btn{background:rgba(140,130,255,.2);border:1px solid rgba(140,130,255,.4);color:#c8cdf0;border-radius:10px;padding:8px 14px;font-family:var(--font-brush);font-size:16px;font-weight:800;cursor:pointer;transition:transform .16s cubic-bezier(.2,1.3,.5,1),box-shadow .16s}
+  .back-btn:hover{transform:translateY(-3px);box-shadow:0 6px 14px rgba(0,0,0,.3)}
+  .back-btn:active{transform:translateY(-7px) scale(.94)}
+
+  #top-left-cluster{
+    position:absolute;top:12px;left:12px;z-index:200;
+    display:none;pointer-events:none;
+    max-width:calc(100vw - 90px);
+  }
+  #top-left-cluster.show{display:block}
+  #top-left-cluster>*{pointer-events:auto}
+
+  #player-card{
+    display:none;align-items:center;gap:10px;
+    background:rgba(160,162,172,.42);
+    border:1px solid rgba(200,202,210,.55);
+    border-radius:14px;
+    padding:8px 14px 8px 10px;
+    box-shadow:0 8px 22px rgba(0,0,0,.36);
+    backdrop-filter:blur(6px);
+    width:auto;
+    max-width:100%;
+    transition:transform .15s;
+  }
+  #player-card.show{display:flex}
+
+  .player-avatar-wrap{
+    position:relative;width:61px;height:61px;border-radius:50%;
+    overflow:visible;border:2px solid rgba(124,108,255,.85);
+    background:#1a1c33;cursor:pointer;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s;
+  }
+  .player-avatar-wrap:active{transform:scale(.94)}
+  .player-avatar-img{width:100%;height:100%;object-fit:cover;display:none;border-radius:50%}
+  .player-avatar-fallback{font-size:30px;display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%}
+  .avatar-edit-badge{
+    position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;
+    background:linear-gradient(135deg,#6d5bff,#9b5bff);color:#fff;font-size:9px;
+    display:flex;align-items:center;justify-content:center;
+    border:2px solid #12142a;pointer-events:none;
+  }
+
+  .player-info{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+  .player-name-row{display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap}
+  .player-name{
+    font-size:14px;font-weight:900;color:#fff;max-width:170px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.5px;
+    font-family:var(--font-body);
+    text-shadow:-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000,0 2px 4px rgba(0,0,0,.6);
+  }
+  .player-level{
+    color:#ffe08a;letter-spacing:.5px;font-family:var(--font-body);
+    font-size:11px;font-weight:900;white-space:nowrap;
+    text-shadow:-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000,0 2px 4px rgba(0,0,0,.6);
+  }
+  .player-exp{
+    color:#e5edff;font-size:9px;font-weight:800;font-family:var(--font-body);
+    text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 3px rgba(0,0,0,.55);
+  }
+  .exp-bar-track{width:100%;height:4px;border-radius:999px;background:rgba(0,0,0,.35);overflow:hidden;margin-top:2px;border:1px solid #000}
+  .exp-bar-fill{height:100%;border-radius:999px;width:0%;background:linear-gradient(90deg,#4ade80,#22c55e);transition:width .35s ease}
+  .player-dust-row{
+    display:flex;align-items:center;gap:5px;font-size:11px;font-weight:900;
+    color:#ffe08a;font-family:var(--font-body);letter-spacing:.5px;
+    margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,224,138,.4);
+    text-shadow:-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000,0 2px 4px rgba(0,0,0,.6);
+  }
+  .player-dust-row .gem{font-size:11px}
+
+  #profile-menu{
+    position:absolute;top:100%;left:0;margin-top:8px;
+    background:linear-gradient(165deg,#1e2040,#141630);
+    border:1px solid rgba(140,130,255,.5);border-radius:14px;
+    padding:7px;display:none;flex-direction:column;gap:3px;
+    box-shadow:0 12px 30px rgba(0,0,0,.7);z-index:250;min-width:210px;
+  }
+  #profile-menu.show{display:flex}
+  #profile-menu button{
+    background:rgba(255,255,255,.05);border:none;border-radius:9px;
+    padding:9px 12px;color:#eef0ff;font-family:var(--font-brush);
+    font-size:14px;font-weight:800;cursor:pointer;text-align:left;
+    white-space:nowrap;transition:.15s;
+  }
+  #profile-menu button:hover{background:rgba(109,91,255,.35)}
+  #profile-menu button:active{transform:scale(.96)}
+  .profile-divider{height:1px;background:rgba(140,130,255,.28);margin:3px 5px}
+  .profile-section-title{font-size:11px;font-weight:900;color:#ffd166;letter-spacing:2px;padding:3px 10px 2px;font-family:var(--font-brush)}
+  .profile-stat-row{
+    display:flex;justify-content:space-between;align-items:center;gap:14px;
+    padding:6px 12px;font-size:12px;color:#c8cdf0;
+    font-family:var(--font-body);font-weight:700;white-space:nowrap;
+  }
+  .profile-stat-row b{color:#ffd166;font-weight:900;font-size:13px;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+
+  #main-menu,
+  #gacha-screen .gacha-content,
+  #inventory-screen .inv-tabs,
+  #level-select .level-grid,
+  #gaoxiao-level-select .level-grid,
+  #reincarnation-screen .reinc-content {
+    padding-top: 104px;
+  }
+
+  #home-return-btn{
+    position:fixed;top:14px;right:14px;z-index:600;
+    width:54px;height:54px;padding:0;border:none;
+    background:transparent;box-shadow:none;
+    color:#fff;font-size:34px;line-height:1;cursor:pointer;
+    display:none;align-items:center;justify-content:center;
+    transition:transform .18s cubic-bezier(.2,1.3,.5,1);
+    font-family:var(--font-body);
+  }
+  #home-return-btn.show{display:flex}
+  #home-return-btn:hover{transform:translateY(-4px)}
+  #home-return-btn:active{transform:translateY(-9px) scale(.9)}
+  #home-return-btn img{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+  #home-return-btn span{display:flex;align-items:center;justify-content:center;width:100%;height:100%}
+
+  .elem-badge{
+    display:inline-flex;align-items:center;justify-content:center;
+    padding:1px 7px;border-radius:6px;
+    font-size:11px;font-weight:900;color:#fff;
+    font-family:var(--font-body);
+    text-shadow:0 1px 2px rgba(0,0,0,.7);
+    border:1px solid rgba(0,0,0,.35);
+    vertical-align:middle;
+  }
+  .elem-badge.lg{font-size:13px;padding:2px 9px;border-radius:8px}
+
+  #auth-screen{align-items:center;justify-content:center;padding:24px;background:url('Lobby_bg_1.png') center/cover no-repeat}
+  .auth-card{width:100%;max-width:380px;background:transparent;border:none;box-shadow:none;padding:28px 24px}
+  .auth-card h1{font-size:30px;font-weight:900;text-align:center;margin:0 0 6px;letter-spacing:2px;background:linear-gradient(180deg,#1a2340,#2a3a70);-webkit-background-clip:text;background-clip:text;color:transparent;font-family:var(--font-brush);text-shadow:0 1px 6px rgba(255,255,255,.55)}
+  .auth-card p.sub{text-align:center;font-size:15px;color:#1e2a4e;margin:0 0 22px;letter-spacing:2px;font-family:var(--font-body);font-weight:700;text-shadow:0 1px 3px rgba(255,255,255,.5)}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:15px;font-weight:800;color:#1e2a4e;margin-bottom:6px;letter-spacing:1px;font-family:var(--font-body);text-shadow:0 1px 3px rgba(255,255,255,.5)}
+  .field input{width:100%;padding:13px 14px;border-radius:14px;border:1px solid rgba(60,90,160,.4);background:rgba(255,255,255,.7);color:#10142a;font-family:var(--font-body);font-size:17px;outline:none}
+  .field input::placeholder{color:#5a6490}
+  .field input:focus{border-color:rgba(80,110,220,.85);background:rgba(255,255,255,.9)}
+  .auth-btn{width:100%;padding:14px;border:none;border-radius:16px;font-family:var(--font-brush);font-weight:900;font-size:20px;letter-spacing:2px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#6d5bff,#9b5bff);box-shadow:0 8px 24px rgba(109,91,255,.4);transition:transform .16s cubic-bezier(.2,1.3,.5,1),box-shadow .16s}
+  .auth-btn:hover{transform:translateY(-3px)}
+  .auth-btn:active{transform:translateY(-7px) scale(.96)}
+  .auth-btn:disabled{opacity:.5}
+  .auth-switch{text-align:center;font-size:15px;color:#1e2a4e;margin-top:16px;font-family:var(--font-body);font-weight:700;text-shadow:0 1px 3px rgba(255,255,255,.5)}
+  .auth-switch button{background:none;border:none;color:#3a3a9a;font-family:var(--font-brush);font-weight:800;font-size:16px;cursor:pointer;text-decoration:underline}
+  .auth-msg{text-align:center;font-size:15px;font-weight:700;margin-top:12px;min-height:18px;font-family:var(--font-body)}
+  .auth-msg.err{color:#c0304a;text-shadow:0 1px 3px rgba(255,255,255,.6)}
+  .auth-msg.ok{color:#0f7a44;text-shadow:0 1px 3px rgba(255,255,255,.6)}
+
+  #main-menu{align-items:center;justify-content:flex-start;padding:60px 20px calc(16px + env(safe-area-inset-bottom));text-align:center;background:url('Lobby_bg_2.png') center/cover no-repeat}
+  .menu-title{font-size:52px;font-weight:900;letter-spacing:6px;background:linear-gradient(180deg,#121a35,#26335f);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 2px 12px rgba(255,255,255,.55);margin:0 0 6px 0;font-family:var(--font-brush);line-height:1.2}
+  .menu-subtitle{font-size:16px;color:#121a35;letter-spacing:8px;margin-bottom:16px;font-family:var(--font-brush);font-weight:700;text-shadow:0 1px 5px rgba(255,255,255,.6)}
+  #poem-bar{margin:0 auto 18px auto;max-width:720px;width:100%;background:linear-gradient(135deg,rgba(58,36,0,.6),rgba(30,24,50,.9));border:1px solid rgba(251,191,36,.45);border-radius:14px;padding:10px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 26px rgba(0,0,0,.45);white-space:nowrap;overflow:hidden}
+  #poem-bar .poem-icon{font-size:20px;flex-shrink:0}
+  #poem-bar .poem-label{font-size:21px;color:#ffd166;font-weight:900;letter-spacing:1px;flex-shrink:0;font-family:var(--font-brush);line-height:1}
+  #poem-text{font-family:var(--font-brush);font-size:18px;font-weight:800;color:#ffe9b0;letter-spacing:1px;text-align:left;flex:1;line-height:1.5;transition:opacity .5s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  #poem-text.fade{opacity:0}
+  .menu-user{font-size:17px;color:#121a35;margin-bottom:12px;font-weight:700;font-family:var(--font-body);text-shadow:0 1px 5px rgba(255,255,255,.6)}
+  .menu-user span{color:#8a5200;font-weight:900}
+  .checkin-btn{
+    margin:0 auto 12px;padding:9px 22px;border:none;border-radius:999px;
+    font-family:var(--font-brush);font-weight:900;font-size:17px;letter-spacing:1px;
+    color:#3a2400;background:linear-gradient(135deg,#ffd166,#f59e0b);
+    box-shadow:0 8px 22px rgba(245,158,11,.35);cursor:pointer;
+    transition:transform .16s cubic-bezier(.2,1.3,.5,1);
+  }
+  .checkin-btn:hover{transform:translateY(-3px)}
+  .checkin-btn:active{transform:translateY(-6px) scale(.96)}
+
+  .menu-buttons{
+    display:flex;
+    justify-content:center;
+    flex-wrap:nowrap;
+    gap:14px;
+    width:100%;
+    max-width:820px;
+    margin:auto auto 0 auto;
+    padding:0 20px;
+  }
+  .menu-btn{
+    flex:1 1 0;
+    min-width:0;
+    max-width:190px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:4px;
+    padding:8px 4px;
+    border:2px solid rgba(160,162,172,.55);
+    background:rgba(160,162,172,.18);
+    border-radius:16px;
+    cursor:pointer;
+    transition:transform .18s cubic-bezier(.2,1.3,.5,1), box-shadow .18s, background .2s, border-color .2s;
+    font-family:var(--font-brush);
+  }
+  .menu-btn:hover{
+    transform:translateY(-6px);
+    background:rgba(160,162,172,.28);
+    border-color:rgba(200,202,210,.85);
+    box-shadow:0 10px 24px rgba(0,0,0,.35);
+  }
+  .menu-btn:active{
+    transform:translateY(-10px) scale(.96);
+    background:rgba(160,162,172,.22);
+  }
+
+  .menu-btn .menu-img{
+    width:100%;
+    max-width:100%;
+    height:auto;
+    aspect-ratio:1/1;
+    min-height:90px;
+    object-fit:contain;
+    display:block;
+    filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));
+    transition:transform .18s cubic-bezier(.2,1.3,.5,1);
+    pointer-events:none;
+  }
+  .menu-btn:hover .menu-img{transform:scale(1.08) rotate(-2deg)}
+  .menu-btn:active .menu-img{transform:scale(1.04)}
+
+  .menu-btn .menu-label{
+    font-size:15px;font-weight:900;letter-spacing:1px;
+    color:#121a35;
+    text-shadow:0 1px 4px rgba(255,255,255,.65);
+    pointer-events:none;
+    line-height:1.1;
+    white-space:nowrap;
+  }
+  .menu-btn.no-label .menu-label{display:none}
+
+  #gacha-screen,#inventory-screen{background:linear-gradient(160deg,#2a3266,#3a4280)}
+  #level-select,#gaoxiao-level-select{background:radial-gradient(circle at 50% 0%,rgba(74,222,128,.18),transparent 60%),linear-gradient(160deg,#1e4a2a,#2e5a3a)}
+  #reincarnation-screen{background:linear-gradient(160deg,#2a1e4a,#3a2a5a)}
+
+  .dust-display{font-size:16px;font-weight:800;color:#ffd166;background:rgba(20,22,42,.8);padding:8px 16px;border-radius:999px;border:1px solid rgba(251,191,36,.3);font-family:var(--font-body)}
+  .gacha-content{flex:1;padding:20px 16px;display:flex;flex-direction:column;gap:20px;max-width:480px;margin:0 auto;width:100%}
+
+  .gacha-banners-row{display:flex;gap:10px;align-items:stretch}
+  .gacha-banner{
+    flex:1;min-width:0;text-align:center;padding:22px 12px;border-radius:22px;
+    background:linear-gradient(165deg,#2a1e4a,#1c1533);
+    border:1px solid rgba(255,140,66,.3);
+    box-shadow:0 12px 40px rgba(255,140,66,.15);
+    cursor:pointer;position:relative;overflow:hidden;
+    transition:transform .18s cubic-bezier(.2,1.3,.5,1), box-shadow .2s;
+  }
+  .gacha-banner:hover{transform:translateY(-4px);box-shadow:0 16px 44px rgba(255,140,66,.22)}
+  .gacha-banner.active-banner{border-color:rgba(251,191,36,.8);box-shadow:0 0 0 2px rgba(251,191,36,.55),0 12px 40px rgba(251,191,36,.2)}
+  .gacha-banner.locked{
+    cursor:not-allowed;
+    background:linear-gradient(165deg,#2b2e3a,#181a24);
+    border:1px dashed rgba(150,150,170,.35);
+    box-shadow:none;
+    opacity:.7;
+  }
+  .gacha-banner.locked:hover{transform:none;box-shadow:none}
+  .gacha-banner-icon{font-size:42px;margin-bottom:6px;animation:floatIcon 2.4s ease-in-out infinite}
+  @keyframes floatIcon{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .gacha-banner.locked .gacha-banner-icon{animation:none}
+  .gacha-banner h3{margin:0 0 6px;font-size:19px;font-weight:900;letter-spacing:2px;color:#fff;font-family:var(--font-brush)}
+  .gacha-banner p{margin:0;font-size:13px;color:#c8cdf0;line-height:1.5;font-family:var(--font-body)}
+  .gacha-banner.locked p{color:#8b8d9e}
+  .gacha-banner .lock-badge{
+    display:inline-block;margin-top:8px;padding:2px 10px;border-radius:999px;
+    font-size:11px;font-weight:900;letter-spacing:1px;
+    background:rgba(150,150,170,.25);color:#c8cdf0;
+    border:1px solid rgba(150,150,170,.45);
+    font-family:var(--font-body);
+  }
+
+  .gacha-rates{background:rgba(20,24,48,.7);border:1px solid rgba(140,130,255,.2);border-radius:16px;padding:16px}
+  .gacha-rates h4{margin:0 0 12px;font-size:16px;font-weight:900;letter-spacing:1px;color:#c8cdf0;font-family:var(--font-brush)}
+  .rate-row{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;color:#c8cdf0;padding:4px 0;font-family:var(--font-body)}
+  .rarity{display:inline-flex;align-items:center;justify-content:center;min-width:42px;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:900;color:#0b0c1a;font-family:var(--font-body)}
+  .rarity.N{background:#8b93b8}.rarity.R{background:#38bdf8}.rarity.SR{background:#c084fc}.rarity.SSR{background:#fbbf24;color:#3a2400}.rarity.Unknown{background:#FF00FF;color:#fff}.rarity.RN{background:#FF1493;color:#fff}
+  .gacha-buttons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:auto}
+  .gacha-btn{border:none;border-radius:18px;padding:18px 12px;font-family:var(--font-brush);cursor:pointer;color:#fff;font-weight:900;font-size:20px;letter-spacing:1px;position:relative;transition:transform .16s cubic-bezier(.2,1.3,.5,1),box-shadow .16s}
+  .gacha-btn:hover{transform:translateY(-4px)}
+  .gacha-btn:active{transform:translateY(-8px) scale(.95)}
+  .gacha-btn.single{background:linear-gradient(135deg,#4d96ff,#6d5bff);box-shadow:0 10px 24px rgba(77,150,255,.35)}
+  .gacha-btn.multi{background:linear-gradient(135deg,#ff8c42,#ff5e62);box-shadow:0 10px 24px rgba(255,94,98,.35)}
+  .gacha-btn .cost{font-size:14px;opacity:.9;margin-top:4px;font-family:var(--font-body)}
+  .gacha-btn .bonus{position:absolute;top:-8px;right:-4px;background:#ffd166;color:#3a2400;font-size:10px;font-weight:900;padding:2px 8px;border-radius:999px;font-family:var(--font-body)}
+
+  #gacha-result,#avatar-modal,#evolution-modal,#gm-stats-modal{position:absolute;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);padding:20px}
+  #gacha-result.active,#avatar-modal.active,#evolution-modal.active,#gm-stats-modal.active{display:flex}
+  .gacha-result-box,.avatar-modal-box,.evo-modal-box{background:linear-gradient(165deg,#1e2040,#141630);border:1px solid rgba(140,130,255,.4);border-radius:22px;padding:24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.8);max-height:90vh;overflow-y:auto}
+  .gacha-result-box h2,.avatar-modal-box h2,.evo-modal-box h2{margin:0 0 16px;font-size:24px;font-weight:900;letter-spacing:2px;text-align:center;color:#ffd166;font-family:var(--font-brush)}
+  .gacha-result-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
+  .gacha-result-cards.single{grid-template-columns:1fr;max-width:180px;margin-left:auto;margin-right:auto}
+  .gcard{
+    border-radius:12px;padding:8px 4px;text-align:center;
+    background:linear-gradient(165deg,#2b2e52,#1a1c33);
+    border:2px solid var(--rc);
+    animation:popIn .4s cubic-bezier(.2,1.5,.5,1) backwards;
+    position:relative;overflow:hidden;
+  }
+  .gcard.SSR{
+    border-color:#fbbf24;
+    box-shadow:0 0 10px rgba(251,191,36,.6), inset 0 0 20px rgba(251,191,36,.25);
+  }
+  .gcard.SSR::after{
+    content:"";position:absolute;inset:-50%;
+    background:conic-gradient(from 0deg,transparent,rgba(255,215,80,.5),transparent 35%);
+    animation:spin 3s linear infinite;z-index:0;pointer-events:none;
+  }
+  .gcard>*{position:relative;z-index:1}
+  @keyframes popIn{from{opacity:0;transform:scale(.5) rotate(-10deg)}to{opacity:1;transform:none}}
+  .gcard-rarity{font-size:10px;font-weight:900;color:#0b0c1a;background:var(--rc);border-radius:6px;display:inline-block;padding:1px 6px;margin-bottom:4px;font-family:var(--font-body)}
+  .gcard-img{width:45px;height:45px;object-fit:contain;margin:0 auto;display:none}
+  .gcard-emoji{font-size:28px;line-height:1.2}
+  .gcard-name{font-size:12px;font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-body)}
+  .gcard-elem{font-size:10px;font-weight:900;color:#fff;padding:1px 6px;border-radius:5px;display:inline-block;margin-top:3px;font-family:var(--font-body);border:1px solid rgba(0,0,0,.4)}
+  .confirm-btn{width:100%;padding:14px;border:none;border-radius:14px;font-family:var(--font-brush);font-weight:900;font-size:18px;letter-spacing:2px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#6d5bff,#9b5bff);margin-top:8px;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .confirm-btn:hover{transform:translateY(-3px)}
+  .confirm-btn:active{transform:translateY(-6px) scale(.97)}
+
+  .avatar-choices{display:flex;gap:16px;justify-content:center;margin-bottom:20px}
+  .avatar-choice-btn{flex:1;background:rgba(255,255,255,.05);border:2px solid rgba(140,130,255,.3);border-radius:16px;padding:20px 10px;cursor:pointer;transition:.2s}
+  .avatar-choice-btn:hover{border-color:#6d5bff;background:rgba(109,91,255,.2)}
+  .avatar-choice-btn img{width:100px;height:100px;object-fit:contain;margin-bottom:10px;display:none}
+  .avatar-choice-btn div.txt{font-weight:900;color:#c8cdf0;margin-top:8px;font-family:var(--font-brush);font-size:18px}
+
+  .evo-info{text-align:center;margin-bottom:20px}
+  .evo-info p{font-size:15px;color:#c8cdf0;margin-bottom:10px;font-family:var(--font-body)}
+  .evo-stats{display:flex;justify-content:center;align-items:center;gap:10px;font-size:18px;font-weight:900;color:#ffd166;margin-bottom:20px;font-family:var(--font-body)}
+  .evo-btn{width:100%;padding:14px;border:none;border-radius:14px;font-family:var(--font-brush);font-weight:900;font-size:18px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#ff8c42,#ff5e62);margin-bottom:10px;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .evo-btn:hover{transform:translateY(-3px)}
+  .evo-btn:active{transform:translateY(-6px) scale(.97)}
+  .evo-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+  .inv-tabs{display:flex;justify-content:center;gap:10px;margin:0 auto 10px auto;max-width:520px;padding:0 16px}
+  .inv-tab{flex:1;padding:12px 6px;border:none;border-radius:12px;font-family:var(--font-brush);font-weight:900;font-size:17px;cursor:pointer;background:rgba(255,255,255,.05);color:#9aa0c4;transition:transform .16s cubic-bezier(.2,1.3,.5,1),background .2s}
+  .inv-tab:hover{transform:translateY(-3px)}
+  .inv-tab:active{transform:translateY(-6px) scale(.96)}
+  .inv-tab.active{background:linear-gradient(135deg,#6d5bff,#9b5bff);color:#fff;box-shadow:0 4px 15px rgba(109,91,255,.4)}
+
+  .inv-actions{display:flex;gap:10px;padding:0 16px;max-width:520px;margin:0 auto 16px auto;width:100%}
+  .action-btn{flex:1;padding:12px;border:none;border-radius:12px;font-family:var(--font-brush);font-weight:900;font-size:17px;cursor:pointer;color:#fff;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .action-btn.fusion{background:linear-gradient(135deg,#c084fc,#9b5bff);box-shadow:0 4px 15px rgba(155,91,255,.3)}
+  .action-btn:hover{transform:translateY(-3px)}
+  .action-btn:active{transform:translateY(-7px) scale(.96)}
+
+  .sort-toggle-btn{
+    flex:0 0 52px;width:52px;padding:0;border:none;border-radius:12px;
+    font-size:22px;line-height:1;cursor:pointer;color:#fff;
+    background:linear-gradient(135deg,#4d96ff,#6d5bff);
+    box-shadow:0 4px 15px rgba(77,150,255,.3);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .16s cubic-bezier(.2,1.3,.5,1);
+    font-family:var(--font-body);
+  }
+  .sort-toggle-btn:hover{transform:translateY(-3px)}
+  .sort-toggle-btn:active{transform:translateY(-7px) scale(.94)}
+
+  #fusion-modal{position:absolute;inset:0;z-index:350;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);padding:20px}
+  #fusion-modal.active{display:flex}
+  .fusion-modal-box{background:linear-gradient(165deg,#1e2040,#141630);border:1px solid rgba(140,130,255,.4);border-radius:22px;padding:24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+  .fusion-modal-box h2{margin:0 0 10px;font-size:24px;font-weight:900;letter-spacing:2px;text-align:center;color:#ffd166;font-family:var(--font-brush)}
+  .fusion-desc{text-align:center;font-size:14px;color:#9aa0c4;margin-bottom:20px;line-height:1.6;font-family:var(--font-body)}
+  .fusion-row{display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px;margin-bottom:12px}
+  .fusion-info{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:#fff;font-family:var(--font-body)}
+  .fusion-count{margin-left:auto;font-size:14px;color:#9aa0c4}
+  .fusion-count b{color:#ffd166}
+  .fusion-btn{width:100%;padding:10px;border:none;border-radius:10px;font-family:var(--font-brush);font-weight:900;font-size:16px;cursor:pointer;background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .fusion-btn:hover{transform:translateY(-2px)}
+  .fusion-btn:active{transform:translateY(-5px) scale(.96)}
+  .fusion-btn:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(1);transform:none}
+
+  .inventory-count{font-size:15px;font-weight:800;color:#9aa0c4;background:rgba(20,22,42,.8);padding:8px 16px;border-radius:999px;font-family:var(--font-body)}
+  .inventory-count span{color:#ffd166}
+  .inventory-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:16px;max-width:520px;margin:0 auto;width:100%}
+  .inv-empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:#8f9bd0;font-size:16px;line-height:1.9;font-family:var(--font-body)}
+  .inv-card{position:relative;border-radius:14px;padding:10px 4px;text-align:center;background:linear-gradient(165deg,#2b2e52,#1a1c33);border:2px solid var(--rc);cursor:pointer;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .inv-card:hover{transform:translateY(-3px)}
+  .inv-card:active{transform:translateY(-6px) scale(.95)}
+  .inv-card.active{box-shadow:0 0 0 3px rgba(124,108,255,.8),0 0 20px rgba(124,108,255,.5)}
+  .inv-badge{position:absolute;top:-1px;left:-1px;font-size:10px;font-weight:900;color:#0b0c1a;background:var(--rc);padding:1px 6px;border-radius:14px 0 12px 0;font-family:var(--font-body)}
+  .inv-count-badge{position:absolute;top:-1px;right:-1px;font-size:11px;font-weight:900;color:#fff;background:#ff5e62;padding:1px 7px;border-radius:0 14px 0 12px;font-family:var(--font-body)}
+  .inv-img{width:50px;height:50px;object-fit:contain;margin:0 auto;display:none;border-radius:8px}
+  .inv-emoji{font-size:32px;line-height:1.3}
+  .inv-name{font-size:13px;font-weight:800;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-brush)}
+  .inv-elem{display:inline-block;font-size:10px;font-weight:900;color:#fff;padding:1px 6px;border-radius:5px;margin-top:3px;font-family:var(--font-body);border:1px solid rgba(0,0,0,.4)}
+  .inv-active-tag{position:absolute;bottom:-1px;right:-1px;font-size:9px;font-weight:900;background:#6d5bff;color:#fff;padding:1px 6px;border-radius:10px 0 12px 0;letter-spacing:.5px;font-family:var(--font-body)}
+
+  .dex-card{position:relative;border-radius:14px;padding:10px 4px;text-align:center;background:linear-gradient(165deg,#2b2e52,#1a1c33);border:2px solid var(--rc);cursor:pointer;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .dex-card:hover{transform:translateY(-3px)}
+  .dex-card:active{transform:translateY(-6px) scale(.95)}
+  .dex-card.locked{filter:grayscale(1);opacity:.4}
+  .dex-card.owned{animation:glow 2s infinite alternate}
+  @keyframes glow{from{box-shadow:0 0 5px var(--rc)}to{box-shadow:0 0 20px var(--rc)}}
+
+  .evo-trigger-btn{margin-top:6px;width:90%;padding:4px;border:none;border-radius:6px;background:linear-gradient(135deg,#ff8c42,#ff5e62);color:#fff;font-family:var(--font-brush);font-size:12px;font-weight:900;cursor:pointer;transition:.2s;display:block}
+  .evo-trigger-btn:active{transform:scale(.9)}
+
+  .team-content{display:flex;flex-direction:column;gap:14px;padding:4px 16px 24px;max-width:560px;margin:0 auto;width:100%}
+  .team-section-label{font-size:17px;font-weight:900;color:#ffd166;letter-spacing:2px;font-family:var(--font-brush);margin-top:6px}
+  .team-slots{display:flex;gap:10px;justify-content:center;margin-bottom:6px}
+  .team-slot{flex:1;aspect-ratio:3/4;max-width:140px;border-radius:14px;background:linear-gradient(165deg,#2b2e52,#1a1c33);border:2px dashed rgba(140,130,255,.4);display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;overflow:hidden;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .team-slot:hover{transform:translateY(-3px)}
+  .team-slot:active{transform:translateY(-6px) scale(.96)}
+  .team-slot.filled{border-style:solid;border-color:var(--rc);box-shadow:0 0 16px rgba(124,108,255,.4)}
+  .team-slot .slot-name{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:6px 4px;font-size:13px;font-weight:900;text-align:center;color:#fff;font-family:var(--font-body)}
+
+  .level-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:16px;max-width:520px;margin:0 auto;width:100%}
+  .level-card{border-radius:18px;padding:20px 14px;text-align:center;cursor:pointer;transition:transform .16s cubic-bezier(.2,1.3,.5,1);position:relative;overflow:hidden}
+  .level-card:hover{transform:translateY(-4px)}
+  .level-card:active{transform:translateY(-8px) scale(.96)}
+  .level-card.unlock{background:linear-gradient(160deg,#1e4a2a,#0f2a18);border:2px solid rgba(74,222,128,.5);box-shadow:0 10px 30px rgba(34,197,94,.2)}
+  .level-card.locked{background:linear-gradient(160deg,#1a1c2c,#0f1020);border:2px solid rgba(255,255,255,.08);cursor:not-allowed;opacity:.55}
+  .level-card.locked:hover{transform:none}
+  .level-icon{font-size:38px;margin-bottom:8px}
+  .level-title{font-size:18px;font-weight:900;letter-spacing:1px;margin-bottom:4px;font-family:var(--font-brush)}
+  .level-desc{font-size:13px;color:#9aa0c4;line-height:1.6;font-family:var(--font-body)}
+  .level-card.unlock .level-desc{color:#a8ffcb}
+
+  #hud-layer{position:absolute;inset:0;z-index:50;pointer-events:none;display:none}
+  #hud-layer>*{pointer-events:auto}
+  .top-hud{top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(180deg,rgba(11,12,26,.65),transparent)}
+  .hud-left{display:flex;gap:8px;align-items:center}
+  #joystick-zone{position:absolute;left:24px;bottom:110px;z-index:60;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.35);touch-action:none;backdrop-filter:blur(4px);pointer-events:auto}
+  #joystick-stick{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(255,255,255,.45);border:2px solid rgba(255,255,255,.7);pointer-events:none}
+  #encounter-banner{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.8);z-index:80;opacity:0;pointer-events:none;text-align:center;transition:.35s cubic-bezier(.2,1.5,.5,1)}
+  #encounter-banner.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #encounter-banner h2{font-size:32px;font-weight:900;letter-spacing:6px;margin:0;color:#ffd166;text-shadow:0 0 30px rgba(251,191,36,.7),0 2px 6px rgba(0,0,0,.5);font-family:var(--font-brush)}
+  #move-hint{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:55;background:rgba(20,22,42,.8);backdrop-filter:blur(10px);border:1px solid rgba(140,130,255,.4);border-radius:999px;padding:8px 18px;font-size:14px;font-weight:800;letter-spacing:1px;color:#eef0ff;white-space:nowrap;pointer-events:none;animation:fadeHint .6s ease 3s forwards;font-family:var(--font-body)}
+  @keyframes fadeHint{to{opacity:0}}
+
+  #battle-overlay{position:absolute;inset:0;z-index:150;display:none;flex-direction:column;pointer-events:none;background:linear-gradient(180deg,#8fd3ea 0%,#c4e8f0 18%,#7bc24e 42%,#4a8a34 100%)}
+  #battle-overlay.active{display:flex}
+  #battle-overlay>*{pointer-events:auto}
+  .battle-top{padding:14px 16px;background:linear-gradient(180deg,rgba(11,12,26,.55),transparent);flex-shrink:0}
+  .hp-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:14px;font-weight:800}
+  .hp-label{width:60px;color:#fff;white-space:nowrap;text-shadow:0 1px 3px rgba(0,0,0,.6);font-family:var(--font-brush);font-size:15px}
+  .hp-track{flex:1;height:10px;border-radius:999px;background:rgba(0,0,0,.5);overflow:hidden;border:1px solid rgba(255,255,255,.2)}
+  .hp-fill{height:100%;border-radius:999px;transition:width .5s cubic-bezier(.2,.9,.3,1)}
+  .hp-fill.enemy{background:linear-gradient(90deg,#ff5f6d,#ffc371)}
+  .hp-fill.player{background:linear-gradient(90deg,#38ef7d,#11998e)}
+
+  #battle-stage{flex:1;position:relative;min-height:0;overflow:hidden}
+  #battle-ally-wrap,#battle-enemy-wrap{
+    position:absolute;width:140px;height:140px;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s ease,filter .15s;
+    filter:drop-shadow(0 10px 10px rgba(0,0,0,.4));
+    transform-origin:center bottom;transform:scale(1.3);z-index:2;
+  }
+  #battle-ally-wrap{ left:6%; bottom:16%; }
+  #battle-enemy-wrap{ right:6%; top:16%; }
+  #battle-ally-wrap img,#battle-enemy-wrap img{width:100%;height:100%;object-fit:contain;display:none}
+  #battle-ally-emoji{font-size:110px}
+  #battle-enemy-emoji{font-size:110px}
+
+  .battle-bottom{margin-top:auto;background:rgba(11,12,26,.92);backdrop-filter:blur(14px);border-top:1px solid rgba(140,130,255,.25);padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:55vh;overflow-y:auto;position:relative;z-index:3}
+  .battle-info-line{font-size:13px;font-weight:800;color:#a8b0d8;letter-spacing:1px;margin-bottom:8px;font-family:var(--font-body);display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+  .elem-rel-line{font-size:13px;font-weight:900;padding:6px 10px;border-radius:8px;margin-bottom:10px;font-family:var(--font-body);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .elem-rel-line.strong{background:rgba(74,222,128,.18);border:1px solid rgba(74,222,128,.5);color:#a8ffcb}
+  .elem-rel-line.weak{background:rgba(255,94,98,.18);border:1px solid rgba(255,94,98,.5);color:#ffb0b3}
+  .elem-rel-line.neutral{background:rgba(140,130,255,.12);border:1px solid rgba(140,130,255,.35);color:#c8cdf0}
+  .q-text{font-size:16px;line-height:1.85;font-weight:700;padding:12px;border-radius:12px;background:rgba(124,108,255,.15);border-left:4px solid #6d5bff;margin-bottom:12px;color:#eef0ff;font-family:var(--font-body)}
+  .options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .opt{border:2px solid var(--tc);background:rgba(255,255,255,.06);color:#fff;border-radius:12px;padding:12px 6px;font-family:var(--font-brush);font-size:17px;font-weight:800;cursor:pointer;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .opt:hover{transform:translateY(-2px)}
+  .opt:active{transform:translateY(-5px) scale(.96)}
+  .opt:disabled{opacity:.3;cursor:not-allowed;filter:grayscale(1);border-color:#555 !important;transform:none}
+
+  .skill-btn{width:100%;padding:10px;margin-bottom:12px;border:none;border-radius:10px;font-family:var(--font-brush);font-weight:900;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;animation:pulseSkill 1.5s infinite}
+  .skill-ssr{background:linear-gradient(135deg,#fbbf24,#ff8c42);color:#3a2400}
+  .skill-unknown{background:linear-gradient(135deg,#FF00FF,#9b5bff);color:#fff}
+  .skill-admin{background:linear-gradient(135deg,#FF1493,#9b5bff);color:#fff;box-shadow:0 0 20px rgba(255,20,147,.5)}
+  @keyframes pulseSkill{0%{transform:scale(1);box-shadow:0 0 10px rgba(255,255,255,.2)}50%{transform:scale(1.02);box-shadow:0 0 20px rgba(255,255,255,.5)}100%{transform:scale(1);box-shadow:0 0 10px rgba(255,255,255,.2)}}
+
+  .battle-feedback{border-radius:14px;padding:14px;margin-bottom:12px}
+  .battle-feedback.ok{background:rgba(56,239,125,.15);border:1px solid rgba(56,239,125,.4)}
+  .battle-feedback.bad{background:rgba(255,95,109,.15);border:1px solid rgba(255,95,109,.4)}
+  .battle-feedback h4{margin:0 0 6px;font-size:18px;font-weight:900;font-family:var(--font-brush)}
+  .battle-feedback p{margin:0;font-size:14px;line-height:1.8;color:#d5d9f5;font-family:var(--font-body)}
+  .dmg-line{font-size:14px;font-weight:900;margin-top:8px;color:#ffd166;font-family:var(--font-body)}
+  .next-btn{width:100%;padding:14px;border:none;border-radius:14px;font-family:var(--font-brush);font-weight:900;font-size:19px;letter-spacing:1px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#6d5bff,#9b5bff);transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .next-btn:hover{transform:translateY(-3px)}
+  .next-btn:active{transform:translateY(-6px) scale(.97)}
+  .damage-num{position:fixed;z-index:300;pointer-events:none;font-weight:900;font-size:40px;color:#ffd166;text-shadow:0 2px 10px rgba(0,0,0,.8);animation:dmgFloat 1s ease-out forwards;font-family:var(--font-body)}
+  @keyframes dmgFloat{0%{opacity:1;transform:translateY(0) scale(.8)}20%{transform:translateY(-10px) scale(1.15)}100%{opacity:0;transform:translateY(-70px) scale(.9)}}
+  #hit-flash{position:absolute;inset:0;z-index:140;pointer-events:none;background:radial-gradient(circle at 50% 40%,rgba(255,80,80,.55),transparent 60%);opacity:0;transition:opacity .1s}
+  #hit-flash.on{opacity:1}
+  #battle-result{position:absolute;inset:0;z-index:170;display:none;align-items:center;justify-content:center;background:rgba(11,12,26,.92);backdrop-filter:blur(10px);padding:24px}
+  #battle-result.active{display:flex}
+  .result-card{text-align:center;max-width:340px}
+  .result-card .icon{font-size:64px;margin-bottom:12px}
+  .result-card h2{font-size:32px;font-weight:900;letter-spacing:3px;margin:0 0 10px;font-family:var(--font-brush)}
+  .result-card p{font-size:15px;color:#9aa0c4;line-height:1.8;margin:0 0 20px;font-family:var(--font-body)}
+  .result-card .btn{width:100%;padding:14px;border:none;border-radius:14px;font-family:var(--font-brush);font-weight:900;font-size:19px;cursor:pointer;color:#fff;background:linear-gradient(135deg,#6d5bff,#9b5bff);transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .result-card .btn:active{transform:translateY(-5px) scale(.96)}
+
+  .toast{position:fixed;left:50%;bottom:120px;transform:translate(-50%,20px);background:rgba(30,32,58,.97);border:1px solid rgba(140,130,255,.4);color:#fff;padding:11px 20px;border-radius:999px;font-size:16px;font-weight:800;white-space:nowrap;opacity:0;pointer-events:none;transition:.3s;z-index:400;font-family:var(--font-body)}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  #gift-modal,#settings-modal,#checkin-modal{position:fixed;inset:0;z-index:99998;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.72);padding:24px}
+  #gift-modal.active,#settings-modal.active,#checkin-modal.active{display:flex}
+  .gift-modal-box,.settings-modal-box{background:linear-gradient(165deg,#3a2e10,#1e2040);border:1px solid rgba(251,191,36,.5);border-radius:20px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.85);animation:popIn .25s ease;text-align:center}
+  .settings-modal-box{background:linear-gradient(165deg,#1e2040,#141630);border-color:rgba(140,130,255,.4)}
+  .gift-modal-box h3,.settings-modal-box h2{margin:0 0 6px;font-size:26px;font-weight:900;color:#ffd166;letter-spacing:1px;font-family:var(--font-brush)}
+  .gift-modal-box p{margin:0 0 16px;font-size:14px;color:#9aa0c4;line-height:1.7;font-family:var(--font-body)}
+  .gift-modal-box input{width:100%;padding:14px;border-radius:10px;border:1px solid rgba(251,191,36,.3);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:18px;margin-bottom:10px;outline:none;text-align:center;letter-spacing:3px;font-weight:800;font-family:var(--font-body)}
+  .gift-modal-box input:focus{border-color:rgba(251,191,36,.7);box-shadow:0 0 0 3px rgba(251,191,36,.15)}
+  .gift-msg{font-size:14px;font-weight:700;min-height:18px;margin-bottom:10px;font-family:var(--font-body)}
+  .gift-msg.ok{color:#7cffb0}
+  .gift-msg.err{color:#ff8a9a}
+  .gift-modal-btns{display:flex;gap:10px}
+  .gift-modal-btns button{flex:1;padding:12px;border:none;border-radius:10px;font:inherit;font-weight:900;font-size:16px;cursor:pointer;letter-spacing:1px;font-family:var(--font-brush);transition:transform .15s}
+  .gift-modal-btns .cancel{background:rgba(255,255,255,.1);color:#c8cdf0}
+  .gift-modal-btns .ok{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#3a2400}
+  .gift-modal-btns button:active{transform:translateY(-3px) scale(.96)}
+  .settings-item{margin-bottom:20px;text-align:left}
+  .settings-item label{display:block;font-size:17px;font-weight:800;margin-bottom:10px;color:#c8cdf0;font-family:var(--font-brush)}
+  .settings-item input[type=range]{width:100%;cursor:pointer;accent-color:#6d5bff;height:8px;border-radius:5px;background:rgba(255,255,255,.2)}
+  .settings-action-btn{width:100%;padding:13px;border:none;border-radius:12px;font-family:var(--font-brush);font-weight:900;font-size:18px;cursor:pointer;color:#fff;margin-bottom:10px;letter-spacing:1px;transition:transform .16s cubic-bezier(.2,1.3,.5,1)}
+  .settings-action-btn.gift{background:linear-gradient(135deg,#6b5317,#4a3a10);color:#e8d29a;border:1px solid rgba(251,191,36,.25)}
+  .settings-action-btn.logout{background:linear-gradient(135deg,#5c1a1a,#3d1111);color:#e8a5a5;border:1px solid rgba(239,68,68,.25)}
+  .settings-action-btn.close{background:rgba(255,255,255,.1);color:#c8cdf0}
+  .settings-action-btn:hover{transform:translateY(-3px)}
+  .settings-action-btn:active{transform:translateY(-6px) scale(.97)}
+  .bgm-choice-row{display:flex;gap:8px}
+  .bgm-choice{flex:1;padding:10px 6px;border:2px solid rgba(140,130,255,.35);border-radius:10px;background:rgba(255,255,255,.05);color:#c8cdf0;font-family:var(--font-brush);font-size:15px;font-weight:800;cursor:pointer;transition:transform .15s cubic-bezier(.2,1.3,.5,1), background .2s, border-color .2s}
+  .bgm-choice:hover{transform:translateY(-2px);background:rgba(109,91,255,.2)}
+  .bgm-choice:active{transform:translateY(-4px) scale(.96)}
+  .bgm-choice.active{background:linear-gradient(135deg,#6d5bff,#9b5bff);border-color:#9b5bff;color:#fff;box-shadow:0 4px 12px rgba(109,91,255,.4)}
+
+  #fatal-error{position:fixed;left:0;right:0;top:0;z-index:99999;background:#c0392b;color:#fff;padding:10px 14px;font:12px/1.5 monospace;white-space:pre-wrap;display:none;max-height:50vh;overflow:auto}
+  #fatal-error.show{display:block}
+  #fatal-error b{color:#ffe27a}
+
+  #transformation-overlay{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);backdrop-filter:blur(10px);overflow:hidden}
+  #transformation-overlay.active{display:flex}
+  .tf-bg-glow{position:absolute;width:200vmax;height:200vmax;background:conic-gradient(from 0deg,transparent 0deg,rgba(255,215,80,.3) 20deg,transparent 40deg,transparent 360deg);animation:tf-spin 4s linear infinite;opacity:0;transition:opacity .5s}
+  .tf-bg-glow.active{opacity:1}
+  @keyframes tf-spin{to{transform:rotate(360deg)}}
+  .tf-card-box{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;transform:scale(0);opacity:0}
+  .tf-card-box.active{animation:tf-card-pop .8s cubic-bezier(.2,1.5,.5,1) forwards}
+  @keyframes tf-card-pop{0%{transform:scale(0) rotate(-20deg);opacity:0;filter:brightness(5)}60%{transform:scale(1.2) rotate(5deg);opacity:1;filter:brightness(2)}100%{transform:scale(1) rotate(0);opacity:1;filter:brightness(1)}}
+  .tf-card-img{width:150px;height:150px;object-fit:contain;filter:drop-shadow(0 0 20px rgba(255,215,80,.8))}
+  .tf-card-emoji{font-size:100px;filter:drop-shadow(0 0 20px rgba(255,215,80,.8))}
+  .tf-text{margin-top:20px;font-size:34px;font-weight:900;color:#fff;letter-spacing:4px;text-shadow:0 0 10px #ffd166,0 0 20px #ffd166;opacity:0;font-family:var(--font-brush)}
+  .tf-text.active{animation:tf-text-slide 1s ease-out .5s forwards}
+  @keyframes tf-text-slide{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+  .tf-stars{position:absolute;width:100%;height:100%;pointer-events:none;z-index:1}
+  .tf-star{position:absolute;background:#fff;border-radius:50%;box-shadow:0 0 10px #fff,0 0 20px #ffd166;animation:tf-star-fly 1.5s ease-out infinite}
+  @keyframes tf-star-fly{0%{transform:translate(0,0) scale(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.5);opacity:0}}
+
+  #fusion-effect-overlay{position:fixed;inset:0;z-index:100000;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.9);backdrop-filter:blur(10px);overflow:hidden}
+  #fusion-effect-overlay.active{display:flex}
+  .fusion-particles{position:absolute;width:100%;height:100%;pointer-events:none;z-index:2}
+  .fusion-particle{position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 10px currentColor,0 0 20px currentColor;animation:particle-burst 1s ease-out forwards}
+  @keyframes particle-burst{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+  .fusion-particle-gather{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff;box-shadow:0 0 10px #fff,0 0 20px #ffd166;animation:particle-gather .8s ease-in forwards}
+  @keyframes particle-gather{0%{transform:translate(var(--sx),var(--sy)) scale(1);opacity:1}100%{transform:translate(0,0) scale(.5);opacity:0}}
+  .fusion-new-card{position:relative;z-index:3;transform:scale(0);opacity:0;display:flex;flex-direction:column;align-items:center}
+  .fusion-new-card.active{animation:fusion-card-pop .8s cubic-bezier(.2,1.5,.5,1) forwards}
+  @keyframes fusion-card-pop{0%{transform:scale(0);opacity:0;filter:brightness(5)}60%{transform:scale(1.2);opacity:1;filter:brightness(2)}100%{transform:scale(1);opacity:1;filter:brightness(1)}}
+  .fusion-flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:2;pointer-events:none;animation:flash .5s ease-out forwards}
+  @keyframes flash{0%{opacity:1}100%{opacity:0}}
+
+  #confirm-fusion-modal{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(5px);padding:20px}
+  #confirm-fusion-modal.active{display:flex}
+  .auto-evo-box{background:linear-gradient(165deg,#1e2040,#141630);border:1px solid rgba(251,191,36,.5);border-radius:22px;padding:24px;max-width:400px;width:100%;text-align:center}
+  .auto-evo-box h2{color:#ffd166;margin:0 0 16px;font-size:26px;font-weight:900;font-family:var(--font-brush)}
+  .auto-evo-box p{color:#c8cdf0;font-size:16px;line-height:1.6;margin-bottom:20px;font-family:var(--font-body)}
+
+  .reinc-content{flex:1;display:flex;flex-direction:column;padding:16px;max-width:600px;margin:0 auto;width:100%;gap:12px;overflow-y:auto}
+  .reinc-hp-section{background:rgba(20,22,42,.75);border:1px solid rgba(140,130,255,.35);border-radius:12px;padding:10px 14px;flex-shrink:0}
+  .reinc-hp-row{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800}
+  .reinc-hp-label{color:#7cffb0;white-space:nowrap;letter-spacing:1px;font-family:var(--font-brush);font-size:16px}
+  .reinc-hp-text{color:#fff;white-space:nowrap;font-size:13px;font-weight:900;font-family:var(--font-body)}
+  .reinc-enemy-area{text-align:center;background:linear-gradient(160deg,#2a1e4a,#1c1533);border:1px solid rgba(255,140,66,.35);border-radius:16px;padding:18px 16px;position:relative;box-shadow:0 8px 30px rgba(255,100,100,.15)}
+  .reinc-floor-badge{position:absolute;top:10px;left:12px;background:rgba(255,140,66,.25);border:1px solid rgba(255,140,66,.5);color:#ff8c42;padding:3px 10px;border-radius:999px;font-size:13px;font-weight:900;letter-spacing:1px;font-family:var(--font-body)}
+  .reinc-enemy-name{font-size:20px;font-weight:900;color:#fff;letter-spacing:2px;margin-top:6px;font-family:var(--font-brush);display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+  .reinc-enemy-hp-wrap{max-width:220px;margin:8px auto 0 auto}
+  .reinc-enemy-emoji{font-size:68px;line-height:1.1;margin:6px 0;filter:drop-shadow(0 5px 18px rgba(255,100,100,.45));transition:transform .3s,filter .3s,opacity .3s}
+  .reinc-enemy-emoji.defeated{animation:enemyDefeat .8s ease-out forwards}
+  @keyframes enemyDefeat{0%{transform:scale(1);filter:brightness(1);opacity:1}30%{transform:scale(1.25) rotate(5deg);filter:brightness(3) hue-rotate(-30deg);opacity:1}100%{transform:scale(0) rotate(-30deg);filter:brightness(0);opacity:0}}
+  .reinc-question{font-size:17px;font-weight:800;line-height:1.8;padding:16px;background:rgba(255,255,255,.05);border-radius:14px;border-left:4px solid #9b5bff;font-family:var(--font-body)}
+  .reinc-options{display:flex;flex-direction:column;gap:10px}
+  .reinc-opt{padding:14px;border:2px solid rgba(140,130,255,.4);border-radius:12px;background:rgba(255,255,255,.05);color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:transform .16s cubic-bezier(.2,1.3,.5,1),background .2s;text-align:left;font-family:var(--font-body)}
+  .reinc-opt:hover{background:rgba(140,130,255,.2);border-color:#6d5bff;transform:translateY(-2px)}
+  .reinc-opt:active{transform:translateY(-5px) scale(.98)}
+  .reinc-opt.correct{background:rgba(74,222,128,.35);border-color:#4ade80;color:#a8ffcb}
+  .reinc-opt.wrong{background:rgba(255,94,98,.35);border-color:#ff5e62;color:#ffb0b3}
+  .reinc-opt:disabled{cursor:not-allowed;opacity:.85;transform:none}
+
+  @media (max-width:640px){
+    .top-hud{padding-left:12px;padding-top:70px;padding-right:12px}
+
+    #top-left-cluster{max-width:calc(100vw - 74px)}
+    #player-card{padding:6px 10px 6px 6px;gap:7px;border-radius:12px}
+    .player-avatar-wrap{width:48px;height:48px}
+    .player-avatar-fallback{font-size:24px}
+    .avatar-edit-badge{width:14px;height:14px;font-size:8px}
+    .player-name{font-size:11px;max-width:100px}
+    .player-level{font-size:9px}
+    .player-exp{font-size:8px}
+    .exp-bar-track{height:4px}
+    .player-dust-row{font-size:10px;gap:4px}
+
+    #profile-menu{min-width:190px}
+    #profile-menu button{font-size:13px;padding:8px 10px}
+    .profile-stat-row{font-size:11px;padding:5px 10px}
+    .profile-stat-row b{font-size:12px;max-width:130px}
+
+    #main-menu,
+    #gacha-screen .gacha-content,
+    #inventory-screen .inv-tabs,
+    #level-select .level-grid,
+    #gaoxiao-level-select .level-grid,
+    #reincarnation-screen .reinc-content {
+      padding-top: 88px;
+    }
+
+    #home-return-btn{width:46px;height:46px;font-size:28px;top:12px;right:12px}
+    #player-wrap{width:62px;height:62px}
+    #player-emoji{font-size:50px}
+    #follower-wrap-0,#follower-wrap-1,#follower-wrap-2{width:48px;height:48px}
+    .follower-emoji{font-size:38px}
+
+    #battle-ally-wrap,#battle-enemy-wrap{width:100px;height:100px;transform:scale(1.3)}
+    #battle-ally-emoji,#battle-enemy-emoji{font-size:78px}
+    #battle-ally-wrap{left:4%;bottom:20%}
+    #battle-enemy-wrap{right:4%;top:20%}
+
+    .reinc-enemy-emoji{font-size:56px}
+    .menu-title{font-size:40px;margin-top:0}
+    #poem-bar{max-width:94vw;padding:8px 12px;gap:8px}
+    #poem-text{font-size:15px}
+    #poem-bar .poem-label{font-size:17px}
+
+    .menu-buttons{gap:6px;padding:0 8px;max-width:100%}
+    .menu-btn{flex:1 1 0;min-width:0;max-width:none;padding:5px 3px;border-radius:10px;gap:2px}
+    .menu-btn .menu-img{max-width:100%;height:auto;aspect-ratio:1/1;min-height:60px}
+    .menu-btn .menu-label{font-size:11px;letter-spacing:0}
+
+    .gacha-banners-row{flex-direction:column}
+    .gacha-banner{padding:16px 12px}
+
+    .inv-tab{font-size:15px;padding:10px 4px}
+  }
+</style>
+</head>
+<body>
+<div id="fatal-error"></div>
+
+<div id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-text">載入中...</div>
+</div>
+
+<audio id="bgm" loop></audio>
+
+<button id="home-return-btn" onclick="goHome()" title="回到主頁">
+  <span id="home-return-content">⬅️</span>
+</button>
+
+<div id="app">
+
+  <div id="top-left-cluster">
+    <div id="player-card">
+      <div class="player-avatar-wrap" onclick="toggleProfileMenu(event)" title="點擊頭像">
+        <img id="player-avatar-img" class="player-avatar-img" alt="頭像">
+        <div id="player-avatar-fallback" class="player-avatar-fallback">🧑</div>
+        <div class="avatar-edit-badge">📷</div>
+      </div>
+      <div class="player-info">
+        <div class="player-name-row">
+          <div class="player-name" id="pc-name">冒險者</div>
+          <span class="player-level" id="pc-level">Lv.1</span>
+          <span class="player-exp" id="pc-exp">0 / 100</span>
+        </div>
+        <div class="exp-bar-track"><div class="exp-bar-fill" id="pc-exp-bar"></div></div>
+        <div class="player-dust-row"><span class="gem">💎</span><span id="dust-count">0</span></div>
+      </div>
+
+      <div id="profile-menu">
+        <button onclick="openAvatarChoice(); closeProfileMenu();">🧑‍🤝‍🧑 更換形象</button>
+        <button onclick="triggerAvatarUpload(); closeProfileMenu();">📷 更改頭像</button>
+        <button id="gm-stats-btn" style="display:none" onclick="openGMStats(); closeProfileMenu();">📊 題目統計</button>
+        <div class="profile-divider"></div>
+        <div class="profile-section-title">📊 玩家遊玩資訊</div>
+        <div class="profile-stat-row"><span>⏱ 遊玩時間</span><b id="menu-pc-playtime">0 小時 0 分鐘</b></div>
+        <div class="profile-stat-row"><span>🏆 最佳成績</span><b id="menu-pc-best">0 題</b></div>
+        <div class="profile-stat-row"><span>🆔 ID</span><b id="menu-pc-id">-</b></div>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="avatar-file-input" accept="image/*" style="display:none">
+
+  <div id="forest-scene">
+    <div id="forest-world">
+      <div id="follower-wrap-0" class="follower-wrap">
+        <img class="follower-img" src="" alt="">
+        <div class="follower-emoji">👣</div>
+      </div>
+      <div id="follower-wrap-1" class="follower-wrap">
+        <img class="follower-img" src="" alt="">
+        <div class="follower-emoji">👣</div>
+      </div>
+      <div id="follower-wrap-2" class="follower-wrap">
+        <img class="follower-img" src="" alt="">
+        <div class="follower-emoji">👣</div>
+      </div>
+      <div id="player-wrap">
+        <img id="player-img" src="" alt="玩家">
+        <div id="player-emoji">🧑</div>
+      </div>
+    </div>
+    <div id="move-hint">用 WASD 或搖桿走動，隨機遭遇題目挑戰！</div>
+  </div>
+
+  <div id="hud-layer">
+    <div class="hud top-hud">
+      <div class="hud-left">
+        <button class="back-btn" onclick="exitToLevelSelect()">←</button>
+      </div>
+    </div>
+    <div id="joystick-zone"><div id="joystick-stick"></div></div>
+    <div id="encounter-banner"><h2>⚡ 遭遇挑戰！</h2></div>
+  </div>
+
+  <div id="auth-screen" class="screen active">
+    <div class="auth-card">
+      <h1>中文風雲訣</h1>
+      <p class="sub">武俠冒險</p>
+      <div class="field" id="username-field" style="display:none">
+        <label>用戶名稱</label>
+        <input id="auth-username" type="text" placeholder="遊戲名字（至少 2 字）">
+      </div>
+      <div class="field">
+        <label>帳號</label>
+        <input id="auth-email" type="text" placeholder="帳號名稱">
+      </div>
+      <div class="field">
+        <label>密碼</label>
+        <input id="auth-password" type="password" placeholder="至少 6 個字元，不建議使用複製密碼==">
+      </div>
+      <button id="auth-submit" class="auth-btn">登入</button>
+      <div id="auth-msg" class="auth-msg"></div>
+      <div class="auth-switch">
+        <span id="auth-switch-text">還沒有帳號？</span>
+        <button id="auth-switch-btn" type="button">註冊新帳號</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="main-menu" class="screen">
+    <div class="menu-title">中文風雲訣</div>
+    <div class="menu-subtitle">武俠冒險</div>
+    <div id="poem-bar">
+      <div class="poem-icon">📜</div>
+      <div class="poem-label">公告</div>
+      <div id="poem-text">「何處心安，何處，吾歸。」</div>
+    </div>
+    <div class="menu-user">歡迎，<span id="menu-user-name">冒險者</span></div>
+    <button class="checkin-btn" onclick="openCheckin()">📅 每日簽到</button>
+
+    <div class="menu-buttons">
+      <button class="menu-btn inventory" onclick="showView('inventory')">
+        <img class="menu-img" src="btn_inventory2.png" alt="背包" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="menu-label">背包</div>
+      </button>
+      <button class="menu-btn play" onclick="showView('level')">
+        <img class="menu-img" src="btn_play2.png" alt="進行遊戲" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="menu-label">進行遊戲</div>
+      </button>
+      <button class="menu-btn gacha" onclick="showView('gacha')">
+        <img class="menu-img" src="btn_gacha2.png" alt="抽卡" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="menu-label">抽卡</div>
+      </button>
+      <button class="menu-btn settings" onclick="openSettings()">
+        <img class="menu-img" src="btn_setting2.png" alt="系統設定" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div class="menu-label">系統設定</div>
+      </button>
+    </div>
+  </div>
+
+  <div id="gacha-screen" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showView('main')">← 返回</button>
+      <h2> 召喚</h2>
+      <div class="dust-display">💎 <span id="gacha-dust">0</span></div>
+    </div>
+    <div class="gacha-content">
+      <div class="gacha-banners-row">
+        <div class="gacha-banner active-banner" onclick="selectGachaBanner('wuxing')">
+          <div class="gacha-banner-icon">🎲</div>
+          <h3>幸運召喚</h3>
+          <p>收集金木水火土五行怪談<br>壯大你的冒險隊伍</p>
+        </div>
+        <div class="gacha-banner locked" onclick="selectGachaBanner('xiyou')">
+          <div class="gacha-banner-icon">🐒</div>
+          <h3>西遊記</h3>
+          <p>取經之路，妖魔鬼怪<br>即將開放</p>
+          <span class="lock-badge">🔒 未開放</span>
+        </div>
+      </div>
+
+      <div class="gacha-rates">
+        <h4>機率說明</h4>
+        <div class="rate-row"><span class="rarity N">N</span> 60%</div>
+        <div class="rate-row"><span class="rarity R">R</span> 25%</div>
+        <div class="rate-row"><span class="rarity SR">SR</span> 12%</div>
+        <div class="rate-row"><span class="rarity SSR">SSR</span> 2.5%</div>
+        <div class="rate-row"><span class="rarity Unknown">Unknown</span> 0.5%</div>
+        <div class="rate-row" style="margin-top:8px;border-top:1px solid rgba(140,130,255,.2);padding-top:8px;">🎯 每 50 抽必出 SSR（未擁有）</div>
+        <div class="rate-row">距離保底：<b id="pity-remaining" style="color:#ffd166">50</b> 抽</div>
+        <div class="rate-row" style="font-size:13px;color:#9aa0c4;">※ 每張 SSR 只會出現一次，SSR 強化未開放</div>
+        <div class="rate-row" style="margin-top:6px;border-top:1px solid rgba(140,130,255,.2);padding-top:6px;font-size:13px;">五行相剋：火克木、木克水、水克金、金克土、土克火</div>
+      </div>
+      <div class="gacha-buttons">
+        <button class="gacha-btn single" onclick="doGacha(1)"><div>單抽</div><div class="cost">💎 20</div></button>
+        <button class="gacha-btn multi" onclick="doGacha(10)"><div class="bonus">保底 SR</div><div>十連抽</div><div class="cost">💎 199</div></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="gacha-result">
+    <div class="gacha-result-box">
+      <h2>獲得角色！</h2>
+      <div id="gacha-result-cards" class="gacha-result-cards"></div>
+      <button class="confirm-btn" onclick="closeGachaResult()">確定</button>
+    </div>
+  </div>
+
+  <div id="inventory-screen" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showView('main')">← 返回</button>
+      <h2 id="inv-title">我的背包</h2>
+      <div class="inventory-count"><span id="inv-count">0</span> / 52</div>
+    </div>
+
+    <div class="inv-tabs">
+      <button class="inv-tab active" data-tab="bag" onclick="switchInvTab('bag')">背包</button>
+      <button class="inv-tab" data-tab="dex" onclick="switchInvTab('dex')">圖鑑</button>
+      <button class="inv-tab" data-tab="team" onclick="switchInvTab('team')">隊伍</button>
+    </div>
+
+    <div class="inv-actions" id="inv-actions">
+      <button class="action-btn fusion" onclick="openFusionModal()">🔀 同類合成</button>
+      <button class="sort-toggle-btn" id="sort-toggle-btn" onclick="cycleInvSort()" title="切換排序">🀄</button>
+    </div>
+
+    <div id="inventory-grid" class="inventory-grid"></div>
+    <div id="dex-grid" class="inventory-grid" style="display:none;"></div>
+
+    <div id="team-panel" style="display:none;">
+      <div class="team-content">
+        <div class="team-section-label">⚔️ 出戰隊伍（點擊下方角色加入 / 移除，最多 3 位）</div>
+        <div id="team-slots" class="team-slots"></div>
+        <div class="team-section-label">🛡️ 我的角色</div>
+        <div id="team-roster-grid" class="inventory-grid" style="padding:0"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="level-select" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showView('main')">← 返回</button>
+      <h2>選擇任務</h2>
+      <div style="width:60px"></div>
+    </div>
+    <div class="level-grid">
+      <div class="level-card locked" onclick="showLockedCategory('初小')"><div class="level-icon">🔒</div><div class="level-title">初小</div><div class="level-desc">未開放</div></div>
+      <div class="level-card unlock" onclick="showView('gaoxiao')"><div class="level-icon">📚</div><div class="level-title">高小</div><div class="level-desc">人物描寫冒險、輪迴模式</div></div>
+      <div class="level-card locked" onclick="showLockedCategory('初中')"><div class="level-icon">🔒</div><div class="level-title">初中</div><div class="level-desc">未開放</div></div>
+      <div class="level-card locked" onclick="showLockedCategory('高中')"><div class="level-icon">🔒</div><div class="level-title">高中</div><div class="level-desc">未開放</div></div>
+      <div class="level-card locked" onclick="showLockedCategory('文憑試')"><div class="level-icon">🔒</div><div class="level-title">文憑試</div><div class="level-desc">未開放</div></div>
+      <div class="level-card locked" onclick="showLockedCategory('大學')"><div class="level-icon">🔒</div><div class="level-title">大學</div><div class="level-desc">未開放</div></div>
+    </div>
+  </div>
+
+  <div id="gaoxiao-level-select" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showView('level')">← 返回</button>
+      <h2>高小任務</h2>
+      <div style="width:60px"></div>
+    </div>
+    <div class="level-grid">
+      <div class="level-card unlock" onclick="enterAdventure()"><div class="level-icon">🌲</div><div class="level-title">人物描寫冒險</div><div class="level-desc">在森林中探索，尋找描寫怪談</div></div>
+      <div class="level-card unlock" onclick="enterReincarnation()"><div class="level-icon">🔄</div><div class="level-title">輪迴模式</div><div class="level-desc">連續30題，考驗真本事！</div></div>
+      <div class="level-card locked"><div class="level-icon">🔒</div><div class="level-title">未開放</div><div class="level-desc">即將推出</div></div>
+      <div class="level-card locked"><div class="level-icon">🔒</div><div class="level-title">未開放</div><div class="level-desc">即將推出</div></div>
+    </div>
+  </div>
+
+  <div id="reincarnation-screen" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="exitReincarnation()">← 返回</button>
+      <h2>輪迴模式</h2>
+      <div class="dust-display" style="padding:8px 16px;font-size:16px;font-weight:800;border-radius:999px;">第 <span id="reinc-progress">1</span> / 30 層</div>
+    </div>
+    <div class="reinc-content">
+      <div class="reinc-hp-section">
+        <div class="reinc-hp-row">
+          <span class="reinc-hp-label">🦊 我方 HP</span>
+          <div class="hp-track"><div class="hp-fill player" id="reinc-player-hp-bar" style="width:100%"></div></div>
+          <span class="reinc-hp-text" id="reinc-player-hp-text">70 / 70</span>
+        </div>
+      </div>
+      <div class="reinc-enemy-area">
+        <div class="reinc-floor-badge">第 <span id="reinc-floor-num">1</span> 層</div>
+        <div class="reinc-enemy-emoji" id="reinc-enemy-emoji">👹</div>
+        <div class="reinc-enemy-name" id="reinc-enemy-name">火焰魔</div>
+        <div class="reinc-enemy-hp-wrap">
+          <div class="hp-track"><div class="hp-fill enemy" id="reinc-enemy-hp-bar" style="width:100%"></div></div>
+        </div>
+      </div>
+      <div id="reinc-skill-slot"></div>
+      <div class="reinc-question" id="reinc-question">題目加載中...</div>
+      <div class="reinc-options" id="reinc-options"></div>
+    </div>
+  </div>
+
+  <div id="battle-overlay">
+    <div class="battle-top">
+      <div class="hp-row"><span class="hp-label">👹 對手</span><div class="hp-track"><div class="hp-fill enemy" id="enemy-hp-bar" style="width:100%"></div></div><span id="enemy-hp-text" style="font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)">100</span></div>
+      <div class="hp-row"><span class="hp-label">🦊 我方</span><div class="hp-track"><div class="hp-fill player" id="player-hp-bar" style="width:100%"></div></div><span id="player-hp-text" style="font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)">100</span></div>
+    </div>
+    <div id="battle-stage">
+      <div id="battle-ally-wrap">
+        <img id="battle-ally-img" src="" alt="我方">
+        <div id="battle-ally-emoji">🧑</div>
+      </div>
+      <div id="battle-enemy-wrap">
+        <img id="battle-enemy-img" src="" alt="敵方">
+        <div id="battle-enemy-emoji">👹</div>
+      </div>
+    </div>
+    <div class="battle-bottom" id="battle-bottom"><div id="battle-content"></div></div>
+  </div>
+  <div id="hit-flash"></div>
+  <div id="battle-result"><div class="result-card" id="result-card"></div></div>
+  <div id="toast" class="toast"></div>
+
+  <div id="avatar-modal">
+    <div class="avatar-modal-box">
+      <h2>選擇你的冒險形象</h2>
+      <div class="avatar-choices">
+        <button class="avatar-choice-btn" onclick="chooseGender('male')">
+          <img id="choice-male-img" src="" alt="男">
+          <div id="choice-male-emoji" style="font-size:60px;">🤴</div>
+          <div class="txt">男冒險者</div>
+        </button>
+        <button class="avatar-choice-btn" onclick="chooseGender('female')">
+          <img id="choice-female-img" src="" alt="女">
+          <div id="choice-female-emoji" style="font-size:60px;">👸</div>
+          <div class="txt">女冒險者</div>
+        </button>
+      </div>
+      <button class="confirm-btn" onclick="closeAvatarChoice()">取消</button>
+    </div>
+  </div>
+
+  <div id="evolution-modal">
+    <div class="evo-modal-box">
+      <h2 id="evo-title">角色進化</h2>
+      <div class="evo-info">
+        <p>消耗同名卡片，永久提升該角色能力！</p>
+        <div style="display:flex;justify-content:space-between;font-size:15px;color:#9aa0c4;margin-bottom:12px;background:rgba(0,0,0,.2);padding:10px;border-radius:10px;font-family:var(--font-body)">
+          <span>擁有數量：<b id="evo-owned-count" style="color:#fff;">0</b></span>
+          <span>目前進化次數：<b id="evo-current-level" style="color:#fff;">0</b></span>
+        </div>
+        <div class="evo-stats" style="margin-bottom:16px;">
+          <span id="evo-current-bonus">當前加成: +0%</span>
+          <span>➔</span>
+          <span id="evo-next-bonus" style="color:#7cffb0;">進化後: +0%</span>
+        </div>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:14px;padding:16px;margin-bottom:12px;border:1px solid rgba(255,255,255,.1);">
+        <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:10px;font-family:var(--font-brush)">普通進化（消耗 1 張）</div>
+        <button class="evo-btn" onclick="doEvolution(1)" style="margin-bottom:0;">確認進化 1 級</button>
+      </div>
+      <div style="background:rgba(255,255,255,.05);border-radius:14px;padding:16px;margin-bottom:16px;border:1px solid rgba(255,255,255,.1);">
+        <div style="font-size:17px;font-weight:900;color:#fbbf24;margin-bottom:10px;font-family:var(--font-brush)">一鍵進化（自訂級數）</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <input type="number" id="evo-amount-input" min="1" max="1" value="1" oninput="updateEvoPreview()" style="width:80px;padding:10px;border-radius:10px;border:1px solid #fbbf24;background:#1a1c33;color:#fff;font-size:18px;font-weight:900;text-align:center;outline:none;font-family:var(--font-body)">
+          <span style="font-size:15px;color:#9aa0c4;font-family:var(--font-body)">最多可升 <b id="evo-max-amount" style="color:#fbbf24;">1</b> 級</span>
+        </div>
+        <button class="evo-btn" onclick="doBatchEvolution()" style="margin-bottom:0;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#3a2400;">批量進化</button>
+      </div>
+      <button class="confirm-btn" style="background:rgba(255,255,255,.1);box-shadow:none;" onclick="closeEvolution()">取消</button>
+    </div>
+  </div>
+
+  <div id="fusion-modal">
+    <div class="fusion-modal-box">
+      <h2>🔀 同類合成</h2>
+      <p class="fusion-desc">消耗 5 張相同級別的卡牌，隨機合成 1 張更高一級的卡牌！<br>(SSR 無法向上合成)</p>
+      <div class="fusion-row">
+        <div class="fusion-info"><span class="rarity N">N</span> 級卡片 <span class="fusion-count">擁有：<b id="fusion-n-count">0</b> 張</span></div>
+        <button class="fusion-btn" id="fusion-btn-n" onclick="openFusionConfirm('N')">合成 1 張 R 卡</button>
+      </div>
+      <div class="fusion-row">
+        <div class="fusion-info"><span class="rarity R">R</span> 級卡片 <span class="fusion-count">擁有：<b id="fusion-r-count">0</b> 張</span></div>
+        <button class="fusion-btn" id="fusion-btn-r" onclick="openFusionConfirm('R')">合成 1 張 SR 卡</button>
+      </div>
+      <div class="fusion-row">
+        <div class="fusion-info"><span class="rarity SR">SR</span> 級卡片 <span class="fusion-count">擁有：<b id="fusion-sr-count">0</b> 張</span></div>
+        <button class="fusion-btn" id="fusion-btn-sr" onclick="openFusionConfirm('SR')" disabled>SSR 合成（未開放）</button>
+      </div>
+      <button class="confirm-btn" style="background:rgba(255,255,255,.1);box-shadow:none;margin-top:16px;" onclick="closeFusionModal()">關閉</button>
+    </div>
+  </div>
+
+  <div id="confirm-fusion-modal">
+    <div class="auto-evo-box">
+      <h2>🔀 合成確認</h2>
+      <p id="confirm-fusion-desc"></p>
+      <button class="confirm-btn" onclick="confirmFusion()" style="background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;margin-bottom:10px;">確定合成</button>
+      <button class="confirm-btn" style="background:rgba(255,255,255,.1);box-shadow:none;" onclick="closeConfirmFusion()">取消</button>
+    </div>
+  </div>
+
+  <div id="settings-modal">
+    <div class="settings-modal-box">
+      <h2>⚙️ 系統設定</h2>
+      <div class="settings-item">
+        <label>背景音樂音量</label>
+        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)">
+      </div>
+      <div class="settings-item">
+        <label>大廳背景音樂</label>
+        <div class="bgm-choice-row">
+          <button class="bgm-choice" data-index="0" onclick="setLobbyBgm(0)">曲目 1</button>
+          <button class="bgm-choice" data-index="1" onclick="setLobbyBgm(1)">曲目 2</button>
+          <button class="bgm-choice" data-index="2" onclick="setLobbyBgm(2)">曲目 3</button>
+        </div>
+      </div>
+      <button class="settings-action-btn gift" onclick="openGiftModal()">🎁 禮包兌換</button>
+      <button class="settings-action-btn logout" onclick="logoutFromSettings()">🚪 登出</button>
+      <button class="settings-action-btn close" onclick="closeSettings()">關閉</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="checkin-modal">
+  <div class="gift-modal-box">
+    <h3>📅 每日簽到</h3>
+    <p id="checkin-desc">每天簽到可獲得 50 鑽石。<br>連續 7 天額外 +50，連續 30 天額外 +100。</p>
+    <div id="checkin-reward" style="font-size:15px;font-weight:900;color:#ffd166;margin-bottom:12px;font-family:var(--font-body)"></div>
+    <div class="gift-modal-btns">
+      <button class="cancel" type="button" onclick="closeCheckin()">關閉</button>
+      <button class="ok" type="button" id="checkin-claim-btn" onclick="claimCheckin()">簽到</button>
+    </div>
+  </div>
+</div>
+
+<div id="gm-stats-modal">
+  <div class="gacha-result-box">
+    <h2>📊 題目錯誤率統計</h2>
+    <div id="gm-stats-body" style="max-height:60vh;overflow-y:auto;text-align:left;font-family:var(--font-body);font-size:13px;line-height:1.6"></div>
+    <button class="confirm-btn" onclick="closeGMStats()">關閉</button>
+  </div>
+</div>
+
+<div id="gift-modal">
+  <div class="gift-modal-box">
+    <h3>🎁 禮包兌換</h3>
+    <p>輸入兌換碼即可獲得獎勵</p>
+    <input id="gift-input" type="text" placeholder="請輸入兌換碼" autocomplete="off" spellcheck="false" maxlength="30">
+    <div id="gift-msg" class="gift-msg"></div>
+    <div class="gift-modal-btns">
+      <button class="cancel" type="button" onclick="closeGiftModal()">取消</button>
+      <button class="ok" type="button" onclick="redeemGift()">兌換</button>
+    </div>
+  </div>
+</div>
+
+<div id="transformation-overlay">
+  <div class="tf-bg-glow" id="tf-bg-glow"></div>
+  <div class="tf-stars" id="tf-stars"></div>
+  <div class="tf-card-box" id="tf-card-box">
+    <img id="tf-card-img" class="tf-card-img" src="" style="display:none;">
+    <div id="tf-card-emoji" class="tf-card-emoji">✨</div>
+  </div>
+  <div class="tf-text" id="tf-text">進化成功！</div>
+</div>
+
+<div id="fusion-effect-overlay">
+  <div class="fusion-particles" id="fusion-particles"></div>
+  <div class="fusion-new-card" id="fusion-new-card">
+    <img id="fusion-card-img" class="tf-card-img" src="" style="display:none;">
+    <div id="fusion-card-emoji" class="tf-card-emoji">✨</div>
+  </div>
+  <div class="tf-text" id="fusion-text">合成成功！</div>
+  <div class="fusion-flash" id="fusion-flash" style="display:none;"></div>
+</div>
+
+<script>
+/* ===================== 資源路徑 ===================== */
+const ASSETS = {
+  lobbyBg: 'Lobby_bg_3.png',
+  loginBg: 'Lobby_bg_1.png',
+  bg: 'Game_road2.png',
+  playerMale: 'Male_clean.png',
+  playerFemale: 'madoka2_clean.png',
+  enemy: 'enemy_clean.png',
+  bgmLobby: 'Lobby_sound.mp3',
+  bgmLobbyList: ['Lobby_sound1.mp3', 'Lobby_sound2.mp3', 'Lobby_sound3.mp3'],
+  bgmGame: 'Walking_sound.mp3',
+  bgmBattle: 'FightBg_Sound.mp3'
+};
+
+/* ===================== 五行系統 ===================== */
+var ELEMENT_STRONG = { '火':'木', '木':'水', '水':'金', '金':'土', '土':'火' };
+var ELEMENT_COLOR = {
+  '金': '#fbbf24',
+  '木': '#4ade80',
+  '水': '#38bdf8',
+  '火': '#ef4444',
+  '土': '#d97706',
+  '天地': '#9b5bff'
+};
+var ELEMENT_EMOJI = {
+  '金': '⚔️',
+  '木': '🌿',
+  '水': '💧',
+  '火': '🔥',
+  '土': '⛰️',
+  '天地': ''
+};
+var ELEMENT_LIST = ['金','木','水','火','土'];
+
+function getElementRelation(a, b){
+  if(!a || !b) return 'neutral';
+  if(a === '天地' || b === '天地') return 'neutral';
+  if(ELEMENT_STRONG[a] === b) return 'strong';
+  if(ELEMENT_STRONG[b] === a) return 'weak';
+  return 'neutral';
+}
+function getElementBadge(element, large){
+  if(!element) return '';
+  var color = ELEMENT_COLOR[element] || '#888';
+  var emoji = ELEMENT_EMOJI[element] || '';
+  var cls = large ? 'elem-badge lg' : 'elem-badge';
+  var text = emoji ? (emoji + ' ' + element) : element;
+  return '<span class="'+cls+'" style="background:'+color+'">'+text+'</span>';
+}
+
+/* ===================== 卡片 ===================== */
+var CARDS = [
+  {id:'n_face',   name:'小衣著怪',   element:'土', emoji:'👕', rarity:'N', img:''},
+  {id:'n_face_2', name:'布衣小童',   element:'木', emoji:'🧒', rarity:'N', img:''},
+  {id:'n_face_3', name:'素衣丫頭',   element:'水', emoji:'👧', rarity:'N', img:''},
+  {id:'n_face_4', name:'粗布漢子',   element:'土', emoji:'🧔', rarity:'N', img:''},
+  {id:'n_word',   name:'小豆口怪',   element:'火', emoji:'👄', rarity:'N', img:''},
+  {id:'n_word_2', name:'多嘴小童',   element:'火', emoji:'🗣️', rarity:'N', img:''},
+  {id:'n_word_3', name:'結巴書生',   element:'水', emoji:'📖', rarity:'N', img:''},
+  {id:'n_word_4', name:'碎嘴婆婆',   element:'土', emoji:'👵', rarity:'N', img:''},
+  {id:'n_act',    name:'小動作怪',   element:'木', emoji:'👣', rarity:'N', img:''},
+  {id:'n_act_2',  name:'蹦跳小妖',   element:'木', emoji:'🐸', rarity:'N', img:''},
+  {id:'n_act_3',  name:'慢吞吞龜',   element:'水', emoji:'🐢', rarity:'N', img:''},
+  {id:'n_act_4',  name:'手忙腳亂童', element:'火', emoji:'🤹', rarity:'N', img:''},
+  {id:'n_mind',   name:'小心思怪',   element:'水', emoji:'💭', rarity:'N', img:''},
+  {id:'n_mind_2', name:'膽小兔子',   element:'木', emoji:'🐰', rarity:'N', img:''},
+  {id:'n_mind_3', name:'愛哭鬼',     element:'水', emoji:'😢', rarity:'N', img:''},
+  {id:'n_mind_4', name:'猶豫不決者', element:'土', emoji:'🤔', rarity:'N', img:''},
+  {id:'n_exp',    name:'小眼神怪',   element:'金', emoji:'👁️', rarity:'N', img:''},
+  {id:'n_exp_2',  name:'傻笑童子',   element:'木', emoji:'😄', rarity:'N', img:''},
+  {id:'n_exp_3',  name:'愁眉小生',   element:'水', emoji:'😟', rarity:'N', img:''},
+  {id:'n_exp_4',  name:'瞪眼小妖',   element:'火', emoji:'😳', rarity:'N', img:''},
+
+  {id:'r_face',   name:'藍衣女',     element:'水', emoji:'🥋', rarity:'R', img:''},
+  {id:'r_face_2', name:'紅衣娘子',   element:'火', emoji:'👗', rarity:'R', img:''},
+  {id:'r_face_3', name:'白面書生',   element:'金', emoji:'🧑‍🎓', rarity:'R', img:''},
+  {id:'r_word',   name:'多嘴書生',   element:'火', emoji:'🗣️', rarity:'R', img:''},
+  {id:'r_word_2', name:'說書人',     element:'水', emoji:'🎤', rarity:'R', img:''},
+  {id:'r_word_3', name:'巧嘴媒婆',   element:'火', emoji:'💬', rarity:'R', img:''},
+  {id:'r_act',    name:'疾風忍者',   element:'木', emoji:'🥷', rarity:'R', img:''},
+  {id:'r_act_2',  name:'飛毛腿',     element:'木', emoji:'🏃', rarity:'R', img:''},
+  {id:'r_act_3',  name:'夜行盜',     element:'水', emoji:'🕵️', rarity:'R', img:''},
+  {id:'r_mind',   name:'心魔怪',     element:'火', emoji:'😈', rarity:'R', img:''},
+  {id:'r_mind_2', name:'患得患失者', element:'水', emoji:'😰', rarity:'R', img:''},
+  {id:'r_mind_3', name:'多疑郎君',   element:'金', emoji:'🤨', rarity:'R', img:''},
+  {id:'r_exp',    name:'狐面妖',     element:'火', emoji:'🦊', rarity:'R', img:''},
+  {id:'r_exp_2',  name:'冷面郎',     element:'水', emoji:'😐', rarity:'R', img:''},
+  {id:'r_exp_3',  name:'笑面虎',     element:'金', emoji:'😏', rarity:'R', img:''},
+
+  {id:'sr_face',   name:'崔鶯鶯',   element:'木', emoji:'🌸', rarity:'SR', img:''},
+  {id:'sr_face_2', name:'霍小玉',   element:'水', emoji:'💐', rarity:'SR', img:''},
+  {id:'sr_word',   name:'紅線女',   element:'木', emoji:'🪢', rarity:'SR', img:''},
+  {id:'sr_word_2', name:'李娃',     element:'火', emoji:'🎶', rarity:'SR', img:''},
+  {id:'sr_act',    name:'聶隱娘',   element:'金', emoji:'🗡️', rarity:'SR', img:''},
+  {id:'sr_act_2',  name:'崑崙奴',   element:'土', emoji:'🐉', rarity:'SR', img:''},
+  {id:'sr_mind',   name:'杜子春',   element:'水', emoji:'🧘', rarity:'SR', img:''},
+  {id:'sr_mind_2', name:'淳于棼',   element:'木', emoji:'🌙', rarity:'SR', img:''},
+  {id:'sr_exp',    name:'柳毅',     element:'水', emoji:'📜', rarity:'SR', img:''},
+  {id:'sr_exp_2',  name:'盧生',     element:'土', emoji:'💤', rarity:'SR', img:''},
+
+  {id:'ssr_face', name:'李白',   element:'水', emoji:'🍶', rarity:'SSR', img:'李白A_Icon.png'},
+  {id:'ssr_word', name:'杜甫',   element:'土', emoji:'📜', rarity:'SSR', img:'杜甫A_Icon.png'},
+  {id:'ssr_act',  name:'孫悟空', element:'金', emoji:'🐒', rarity:'SSR', img:'孫悟空A_Icon.png'},
+  {id:'ssr_mind', name:'王維',   element:'木', emoji:'🎋', rarity:'SSR', img:'王維A_Icon.png'},
+  {id:'ssr_exp',  name:'唐三藏', element:'木', emoji:'🧘', rarity:'SSR', img:'唐三藏A_Icon.png'},
+
+  {id:'unknown_1', name:'驚天梁老師',   element:'火',   emoji:'😱', rarity:'Unknown', img:''},
+  {id:'rn_admin',  name:'官方管理人員', element:'天地', emoji:'🛡️', rarity:'RN', img:'Miku.png'}
+];
+
+var TANG_POEMS = [
+  '「今宵酒醒何處？楊柳岸、曉風殘月。」-- 柳永〈雨霖鈴〉','春眠不覺曉，處處聞啼鳥。','白日依山盡，黃河入海流。',
+  '鋤禾日當午，汗滴禾下土。','離離原上草，一歲一枯榮。','月落烏啼霜滿天，江楓漁火對愁眠。',
+  '兩岸猿聲啼不住，輕舟已過萬重山。','飛流直下三千尺，疑是銀河落九天。',
+  '不知細葉誰裁出，二月春風似剪刀。','停車坐愛楓林晚，霜葉紅於二月花。',
+  '但願人長久，千里共嬋娟。- 蘇軾','空山不見人，但聞人語響。','海內存知己，天涯若比鄰。',
+  '欲窮千里目，更上一層樓。','孤帆遠影碧空盡，唯見長江天際流。','桃花潭水深千尺，不及汪倫送我情。',
+  '隨風潛入夜，潤物細無聲。','會當凌絕頂，一覽眾山小。','梅花香自苦寒來。','誰能鑄火為雪- 周夢蝶',
+  '天也，你錯勘賢愚枉做天！- 關漢卿','夕陽西下，斷腸人在天涯。- 馬致遠'
+];
+
+var QUESTIONS = [
+  { text:'她穿著一身月白色的旗袍，烏黑的長髮挽成髻，眉眼間帶著幾分書卷氣。', answer:'外貌', explain:'衣服、髮型、樣貌的描寫，表現她氣質溫婉、富書卷氣。' },
+  { text:'「這件事與我無關！」他冷冷地說。', answer:'語言', explain:'引號中的話是人物語言，加上「冷冷地」凸顯冷漠態度。' },
+  { text:'他一個箭步衝上前，一把搶過小偷手裡的錢包，順勢將人按倒在地。', answer:'動作', explain:'「衝、搶、按」一連串動詞，寫出他身手敏捷、果斷勇敢。' },
+  { text:'她心裡像揣了隻小兔子，撲通撲通跳個不停，暗暗祈禱老師千萬別點到自己的名字。', answer:'心理', explain:'內心活動的描寫，表現她緊張、缺乏自信。' },
+  { text:'他皺著眉頭，嘴角向下撇，眼神裡滿是不耐煩。', answer:'神態', explain:'面部表情與眼神的刻畫，寫出他煩躁、不耐的心情。' },
+  { text:'老爺爺滿頭銀髮，臉上的皺紋像刀刻一般，一雙手粗糙得像樹皮。', answer:'外貌', explain:'容貌與體態的刻畫，暗示他一生辛勞、飽經風霜。' },
+  { text:'「孩子，」奶奶摸著我的頭，聲音有些沙啞，「以後要好好照顧自己。」', answer:'語言', explain:'奶奶說的話，流露出她的慈愛與不捨。' },
+  { text:'他咬緊牙關，雙手死死抓住繩索，一步一步地往上爬。', answer:'動作', explain:'具體動作的描寫，表現他堅毅、不肯放棄的性格。' },
+  { text:'他想：這下完了，要是被媽媽知道我打破了花瓶，肯定要吃不了兜著走。', answer:'心理', explain:'內心的念頭，寫出他害怕、後悔又忐忑不安。' },
+  { text:'她抿著嘴笑了，眼睛彎成兩道月牙，臉上飛起兩朵紅雲。', answer:'神態', explain:'表情變化，表現她羞澀又開心的樣子。' }
+];
+
+var REINCARNATION_QUESTIONS = [
+  { q: '下列不屬於“描寫”這種表達方式的是：', options: ['A. 他推開門，一陣冷風撲面而來。', 'B. 她的眼睛很大，睫毛很長。', 'C. 我認為這樣做是不對的。', 'D. 遠處的山巒在霧中若隱若現。'], answer: 2 },
+  { q: '“描寫”與“敘述”的主要區別在於：', options: ['A. 描寫更長，敘述更短', 'B. 描寫重再現形象，敘述重交代過程', 'C. 描寫只用於寫人，敘述只用於寫事', 'D. 描寫必須使用修辭，敘述不需要'], answer: 1 },
+  { q: '下列關於“正面描寫”與“側面描寫”的區別，說法正確的是：', options: ['A. 正面描寫一定比側面描寫更重要', 'B. 側面描寫是通過他人、環境或效果來烘托對象', 'C. 側面描寫就是環境描寫', 'D. 正面描寫不能使用細節'], answer: 1 },
+  { q: '判斷：“白描”等於“不描寫”。', options: ['A. 正確', 'B. 錯誤'], answer: 1 },
+  { q: '下列手法中，屬於“以簡約筆墨勾勒對象輪廓”的是：', options: ['A. 工筆細描', 'B. 白描', 'C. 場面描寫', 'D. 心理描寫'], answer: 1 },
+  { q: '“細節描寫”與“場面描寫”的區別主要在於：', options: ['A. 細節描寫寫人，場面描寫寫景', 'B. 細節聚焦局部細微處，場面聚焦一定空間內的多對象組合', 'C. 細節描寫不用修辭，場面描寫必須用修辭', 'D. 二者沒有區別'], answer: 1 },
+  { q: '下列不屬於人物描寫範疇的是：', options: ['A. 肖像描寫', 'B. 語言描寫', 'C. 環境描寫', 'D. 心理描寫'], answer: 2 },
+  { q: '“描寫手法”與“修辭手法”的關係是：', options: ['A. 完全等同', 'B. 描寫手法是上位概念，修辭手法是其中一種手段', 'C. 修辭手法不服務於描寫', 'D. 描寫手法只包括比喻和擬人'], answer: 1 },
+  { q: '判斷：場面描寫中往往同時包含人物描寫和環境描寫。', options: ['A. 正確', 'B. 錯誤'], answer: 0 },
+  { q: '下列關於“描寫角度”的說法，錯誤的是：', options: ['A. 可以從視覺、聽覺、嗅覺、觸覺、味覺等感官角度描寫', 'B. 可以從動與靜、虛與實的角度描寫', 'C. 描寫角度越多，效果一定越好', 'D. 描寫角度服務於表達目的'], answer: 2 },
+  { q: '閱讀：“他五十歲上下，瘦削的臉，顴骨很高，眼睛細小而銳利，穿一件洗得發白的灰布衫。”這段文字主要運用了：', options: ['A. 語言描寫', 'B. 肖像描寫', 'C. 心理描寫', 'D. 環境描寫'], answer: 1 },
+  { q: '閱讀：“‘我不去。’他低着頭，聲音很小，手指使勁絞着衣角。”這段文字沒有直接使用：', options: ['A. 語言描寫', 'B. 動作描寫', 'C. 心理描寫', 'D. 神態描寫'], answer: 2 },
+  { q: '“她心裡像有十五個吊桶打水，七上八下。”這裡運用的描寫方法是：', options: ['A. 動作描寫', 'B. 心理描寫', 'C. 肖像描寫', 'D. 環境描寫'], answer: 1 },
+  { q: '閱讀：“老頭把煙袋在鞋底上磕了兩下，慢慢站起來，走到牆角，又蹲下去，一句話也沒說。”這段文字主要通過什麼來暗示人物內心？', options: ['A. 語言', 'B. 動作與沉默', 'C. 外貌', 'D. 環境'], answer: 1 },
+  { q: '下列人物描寫中，屬於“間接心理描寫”的是：', options: ['A. “我很高興。”', 'B. “他感到一陣刺痛。”', 'C. “她望着窗外，手中的針停了很久，線從針眼里滑了出來。”', 'D. “他想：這下完了。”'], answer: 2 },
+  { q: '閱讀：“孔乙己便漲紅了臉，額上的青筋條條綻出，爭辯道，‘竊書不能算偷……竊書！……讀書人的事，能算偷麼？’”這段文字同時運用了：', options: ['A. 肖像、語言、動作', 'B. 肖像、語言、心理', 'C. 語言、環境、細節', 'D. 動作、環境、神態'], answer: 0 },
+  { q: '“他坐在門檻上，兩肘撐膝，手掌托腮，目光直直地盯着地面，一動不動，像一截木樁。”這段描寫的主要作用是：', options: ['A. 表現人物身體強壯', 'B. 暗示人物內心的沉重或發呆狀態', 'C. 說明人物在休息', 'D. 交代人物的年齡'], answer: 1 },
+  { q: '判斷：語言描寫只包括人物說出來的話，不包括獨白和內心獨白。', options: ['A. 正確', 'B. 錯誤'], answer: 1 },
+  { q: '閱讀：“她說話時總是笑着，可那笑停留在嘴角，到不了眼睛。”這裡運用了：', options: ['A. 肖像描寫，暗示人物並非真正開心', 'B. 語言描寫，說明她性格開朗', 'C. 動作描寫，表現她善於交際', 'D. 環境描寫，烘托輕鬆氣氛'], answer: 0 },
+  { q: '下列人物描寫中，細節感最強的是：', options: ['A. 他很生氣。', 'B. 他猛地站起來。', 'C. 他站起來時，膝蓋撞翻了凳子，茶杯里的水晃出來，在桌面上淌成一小片。', 'D. 他離開了房間。'], answer: 2 },
+  { q: '“老張把最後一口烟吸完，在鞋底上摁滅烟頭，又用腳尖碾了碾，才慢慢開口。”這串動作描寫的主要表達效果是：', options: ['A. 說明老張動作熟練', 'B. 表現老張愛整潔', 'C. 暗示老張在斟酌措辭、拖延開口', 'D. 交代老張抽煙的習慣'], answer: 2 },
+  { q: '閱讀：“他的聲音不高，卻像一塊石頭砸在寂靜的水面上。”這裡兼用了：', options: ['A. 語言描寫與誇張', 'B. 語言描寫與比喻', 'C. 動作描寫與擬人', 'D. 心理描寫與排比'], answer: 1 },
+  { q: '判斷：肖像描寫只能寫人的五官和身材，不能寫衣着和神態。', options: ['A. 正確', 'B. 錯誤'], answer: 1 },
+  { q: '下列關於人物描寫作用的表述，不恰當的是：', options: ['A. 語言描寫可以表現人物的身份、教養和性格', 'B. 動作描寫可以暗示心理', 'C. 心理描寫可以直接呈現人物的思想活動', 'D. 外貌描寫越詳細，人物形象越豐滿'], answer: 3 },
+  { q: '閱讀：“月光如水，靜靜地流淌在古老的庭院裡。老槐樹在夜風中搖曳，投下斑駁的影子。”這段文字主要運用了：', options: ['A. 人物描寫', 'B. 環境描寫', 'C. 細節描寫', 'D. 心理描寫'], answer: 1 },
+  { q: '景物描寫的作用通常不包括：', options: ['A. 烘托人物心情', 'B. 營造氛圍', 'C. 推動情節發展', 'D. 直接議論主題'], answer: 3 },
+  { q: '“天灰濛濛的，雨絲斜織着，巷子裡的青石板濕漉漉地發亮，兩旁的屋檐滴着水，一聲一聲，像在數着時間。”這段景物描寫營造的氛圍是：', options: ['A. 熱烈歡快', 'B. 壓抑、清冷、悠長', 'C. 雄偉壯闊', 'D. 輕鬆幽默'], answer: 1 },
+  { q: '判斷：景物描寫只能出現在小說的開頭，不能出現在人物對話中間。', options: ['A. 正確', 'B. 錯誤'], answer: 1 },
+  { q: '閱讀：“屋外狂風怒吼，大雪紛飛；屋裡爐火正旺，壺裡的水咕嘟咕嘟響着。”這裡同時運用了：', options: ['A. 聽覺與視覺描寫', 'B. 嗅覺與味覺描寫', 'C. 觸覺與聽覺描寫', 'D. 只有視覺描寫'], answer: 0 },
+  { q: '判斷：白描完全不能使用比喻。', options: ['A. 正確', 'B. 錯誤'], answer: 1 }
+];
+
+var REINC_ENEMIES = [
+  {emoji:'👹', name:'火焰魔',   element:'火'},
+  {emoji:'👺', name:'冰霜妖',   element:'水'},
+  {emoji:'👻', name:'暗影鬼',   element:'水'},
+  {emoji:'💀', name:'骷髏兵',   element:'金'},
+  {emoji:'🧟', name:'殭屍王',   element:'土'},
+  {emoji:'🧛', name:'吸血鬼',   element:'水'},
+  {emoji:'🐉', name:'青龍',     element:'木'},
+  {emoji:'🐲', name:'黑龍',     element:'水'},
+  {emoji:'😈', name:'小惡魔',   element:'火'},
+  {emoji:'👿', name:'惡魔王',   element:'火'},
+  {emoji:'🦹', name:'暗影刺客', element:'水'},
+  {emoji:'🧙', name:'黑巫師',   element:'水'},
+  {emoji:'🐺', name:'狼妖',     element:'木'},
+  {emoji:'🦇', name:'蝙蝠怪',   element:'水'},
+  {emoji:'🕷️', name:'蜘蛛精',   element:'木'}
+];
+
+var TYPES = {
+  '外貌': { color:'#FF6B6B', emoji:'👤' },
+  '語言': { color:'#4D96FF', emoji:'💬' },
+  '動作': { color:'#6BCB77', emoji:'🏃' },
+  '心理': { color:'#B983FF', emoji:'💭' },
+  '神態': { color:'#FFC93C', emoji:'😊' },
+  '情緒': { color:'#FF1493', emoji:'💗' },
+  '全能': { color:'#FF1493', emoji:'🛡️' }
+};
+
+var RARITY = {
+  N:{ color:'#8b93b8', rate:0.001 },
+  R:{ color:'#38bdf8', rate:0.001 },
+  SR:{ color:'#c084fc', rate:0.003 },
+  SSR:{ color:'#fbbf24', rate:0.005 },
+  Unknown:{ color:'#FF00FF', rate:0.01 },
+  RN:{ color:'#FF1493', rate:0 }
+};
+
+var CARD_HP = { 'N':60, 'R':70, 'SR':80, 'SSR':90, 'Unknown':100, 'RN':30624700 };
+var MAX_LEVEL = 100;
+
+var WORLD_SIZE = 3000;
+var PLAYER_SPEED = 180;
+var GACHA_COST_SINGLE = 20;
+var GACHA_COST_MULTI = 199;
+
+var EXP_GAIN = { N:5, R:6, SR:8, SSR:10, Unknown:10, RN:0 };
+var EXP_LOSS = { N:10, R:8, SR:5, SSR:3, Unknown:0, RN:0 };
+
+function newPity(){ return { sinceSSR: 0 }; }
+
+function getUnownedSSRCards(){
+  return CARDS.filter(function(c){
+    return c.rarity === 'SSR' && !(state.collection && state.collection[c.id] > 0);
+  });
+}
+
+var state = {
+  user:null, gmMode:false, dust:0, collection:{}, activeCardId:null,
+  team:[], teamFollowers:[],
+  evolutions:{}, playTime:0, playSeconds:0, bestScore:0, level:1, exp:0, avatar:null,
+  playerGender:'male', battle:null, authMode:'login',
+  keys:{}, joystick:{dx:0,dy:0},
+  px:WORLD_SIZE/2, py:WORLD_SIZE/2,
+  moveDist:0, gameActive:false, encounterLock:false, lastTime:0, rafId:null,
+  bgmVolume:0.5,lobbyBgmIndex:0,currentInvTab:'bag', currentEvoCardId:null,
+  invSortMode:'element',
+  pendingFusionRarity:null,
+  pity: newPity(),
+  checkin:{ lastDate:'', streak:0, total:0 },
+  questionStats:{},
+  reincarnation:{ index:0, isActive:false, playerHP:0, playerMaxHP:0, locked:false }
+};
+
+var SafeStorage = (function(){
+  var mem = {};
+  return {
+    get:function(k){ try{return window.localStorage.getItem(k);}catch(e){return mem[k]!=null?mem[k]:null;} },
+    set:function(k,v){ try{window.localStorage.setItem(k,v);}catch(e){mem[k]=v;} },
+    remove:function(k){ try{window.localStorage.removeItem(k);}catch(e){delete mem[k];} }
+  };
+})();
+
+if (ASSETS.bg) {
+  var fw = document.getElementById('forest-world');
+  if (fw) fw.style.backgroundImage = "url('" + ASSETS.bg + "')";
+}
+
+function expNeededForLevel(level){
+  if(level >= MAX_LEVEL) return Infinity;
+  return Math.round(100 * Math.pow(1.15, level - 1));
+}
+function $(s){ return document.querySelector(s); }
+function safeText(selector, text){
+  var el = (typeof selector === 'string') ? $(selector) : selector;
+  if(el) el.textContent = text;
+  return el;
+}
+function toast(m){
+  var e = $('#toast'); if(!e) return;
+  e.textContent = m; e.classList.add('show');
+  clearTimeout(e._t); e._t = setTimeout(function(){ e.classList.remove('show'); }, 1800);
+}
+function dustText(n){ return String(Math.max(0, Math.floor(Number(n) || 0))); }
+function fmtNum(n){
+  n = Number(n) || 0;
+  if(n >= 1e9) return (n/1e9).toFixed(1) + 'B';
+  if(n >= 1e6) return (n/1e6).toFixed(1) + 'M';
+  if(n >= 1e4) return (n/1e3).toFixed(1) + 'k';
+  return String(n);
+}
+function formatPlayTime(minutes){
+  minutes = Math.max(0, Math.floor(Number(minutes) || 0));
+  var h = Math.floor(minutes / 60);
+  var m = minutes % 60;
+  return h + ' 小時 ' + m + ' 分鐘';
+}
+function todayStr(){
+  var d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function yesterdayStr(){
+  var d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+  });
+}
+function ensureQuestionStat(key){
+  if(!state.questionStats[key]) state.questionStats[key] = { correct:0, wrong:0 };
+  return state.questionStats[key];
+}
+function recordQuestionResult(key, isCorrect){
+  var s = ensureQuestionStat(key);
+  if(isCorrect) s.correct++;
+  else s.wrong++;
+  saveLocal();
+}
+function getQuestionErrorRate(key){
+  var s = state.questionStats[key];
+  if(!s) return 0;
+  var total = (Number(s.correct)||0) + (Number(s.wrong)||0);
+  if(total <= 0) return 0;
+  return (Number(s.wrong)||0) / total;
+}
+function getCard(id){ for(var i=0;i<CARDS.length;i++){ if(CARDS[i].id===id) return CARDS[i]; } return null; }
+function getActiveCard(){
+  if(state.team && state.team.length > 0 && state.team[0]){
+    var c = getCard(state.team[0]);
+    if(c) return c;
+  }
+  if(state.activeCardId) return getCard(state.activeCardId);
+  return null;
+}
+function getEvoBonus(cardId, rarity){
+  var count = state.evolutions[cardId] || 0;
+  var rate = RARITY[rarity] ? RARITY[rarity].rate : 0.001;
+  return count * rate;
+}
+
+/* ===================== 抽卡浮動橫幅 ===================== */
+var currentGachaBanner = 'wuxing';
+function selectGachaBanner(banner){
+  if(banner === 'xiyou'){ toast('🐒 等下啦傻仔！'); return; }
+  currentGachaBanner = 'wuxing';
+  document.querySelectorAll('.gacha-banner').forEach(function(el){
+    if(el.classList.contains('locked')) return;
+    el.classList.toggle('active-banner', el.querySelector('h3').textContent.indexOf('五行') >= 0 || el.querySelector('h3').textContent.indexOf('幸運') >= 0);
+  });
+}
+
+/* ===================== 排序（emoji 小按鈕） ===================== */
+function updateSortToggleUI(){
+  var btn = document.getElementById('sort-toggle-btn');
+  if(!btn) return;
+  if(state.invSortMode === 'element'){
+    btn.textContent = '🀄';
+    btn.title = '目前：五行排序（點擊切換為稀有度）';
+  }else{
+    btn.textContent = '⭐';
+    btn.title = '目前：稀有度排序（點擊切換為五行）';
+  }
+}
+function setInvSort(mode){
+  state.invSortMode = mode;
+  updateSortToggleUI();
+  if(state.currentInvTab === 'bag') renderInventory();
+  else if(state.currentInvTab === 'dex') renderDex();
+}
+function cycleInvSort(){
+  state.invSortMode = (state.invSortMode === 'element') ? 'rarity' : 'element';
+  updateSortToggleUI();
+  if(state.currentInvTab === 'bag') renderInventory();
+  else if(state.currentInvTab === 'dex') renderDex();
+  toast(state.invSortMode === 'element' ? '🀄 已切換為五行排序' : '⭐ 已切換為稀有度排序');
+}
+function sortCards(cards){
+  var copy = cards.slice();
+  var mode = state.invSortMode || 'element';
+  if(mode === 'element'){
+    var order = {'金':0,'木':1,'水':2,'火':3,'土':4,'天地':5};
+    copy.sort(function(a,b){
+      var oa = order[a.element] != null ? order[a.element] : 99;
+      var ob = order[b.element] != null ? order[b.element] : 99;
+      return oa - ob;
+    });
+  }else if(mode === 'rarity'){
+    var rorder = {'N':0,'R':1,'SR':2,'SSR':3,'Unknown':4,'RN':5};
+    copy.sort(function(a,b){
+      var oa = rorder[a.rarity] != null ? rorder[a.rarity] : 99;
+      var ob = rorder[b.rarity] != null ? rorder[b.rarity] : 99;
+      return oa - ob;
+    });
+  }
+  return copy;
+}
+
+/* ===================== 返回主頁 ===================== */
+function updateHomeBtn(){
+  var btn = document.getElementById('home-return-btn');
+  if(!btn) return;
+  var authActive = document.getElementById('auth-screen') && document.getElementById('auth-screen').classList.contains('active');
+  if(state.user && !state.battle && !authActive) btn.classList.add('show');
+  else btn.classList.remove('show');
+}
+function goHome(){
+  if(state.battle) return;
+  var bo = document.getElementById('battle-overlay'); if(bo) bo.classList.remove('active');
+  var br = document.getElementById('battle-result'); if(br) br.classList.remove('active');
+  state.gameActive = false;
+  if(state.rafId){ cancelAnimationFrame(state.rafId); state.rafId = null; }
+  showView('main');
+}
+function loadHomeReturnIcon(){
+  var saved = SafeStorage.get('home_return_icon');
+  var content = document.getElementById('home-return-content');
+  if(!content) return;
+  if(saved){ content.innerHTML = '<img src="' + saved + '" alt="home">'; }
+  else{ content.textContent = '⬅️'; }
+}
+function setHomeReturnIcon(dataUrl){
+  if(!dataUrl){ SafeStorage.remove('home_return_icon'); loadHomeReturnIcon(); return; }
+  SafeStorage.set('home_return_icon', dataUrl);
+  loadHomeReturnIcon();
+}
+function uploadHomeReturnIcon(){
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      var img = new Image();
+      img.onload = function(){
+        var SIZE = 128;
+        var canvas = document.createElement('canvas');
+        canvas.width = SIZE; canvas.height = SIZE;
+        var ctx = canvas.getContext('2d');
+        var min = Math.min(img.width, img.height);
+        var sx = (img.width - min) / 2, sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, SIZE, SIZE);
+        setHomeReturnIcon(canvas.toDataURL('image/png'));
+        toast('✅ 返回按鈕圖片已更新');
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  inp.click();
+}
+
+/* ===================== 公告詩句 ===================== */
+function renderPoem(){
+  var el = document.getElementById('poem-text');
+  if(!el) return;
+  el.classList.add('fade');
+  setTimeout(function(){
+    el.textContent = '「' + TANG_POEMS[Math.floor(Math.random()*TANG_POEMS.length)] + '」';
+    el.classList.remove('fade');
+  }, 220);
+}
+
+function loadCardImages(){}
+
+var currentBgmType = '';
+function switchBgm(type){
+  if(currentBgmType === type) return;
+  currentBgmType = type;
+  var bgm = document.getElementById('bgm');
+  if(!bgm) return;
+  var url = '';
+  if(type === 'lobby'){
+    var list = ASSETS.bgmLobbyList || [ASSETS.bgmLobby];
+    url = list[state.lobbyBgmIndex] || list[0];
+  }
+  else if(type === 'game') url = ASSETS.bgmGame;
+  else if(type === 'battle') url = ASSETS.bgmBattle;
+  if(!url){ bgm.pause(); return; }
+  bgm.src = url;
+  bgm.volume = state.bgmVolume;
+  bgm.play().catch(function(){});
+}
+function openSettings(){
+  var modal = document.getElementById('settings-modal');
+  var slider = document.getElementById('volume-slider');
+  if(modal && slider){ slider.value = state.bgmVolume; modal.classList.add('active'); }
+  updateBgmChoiceUI();
+}
+function setLobbyBgm(index){
+  state.lobbyBgmIndex = index;
+  SafeStorage.set('lobby_bgm_index', String(index));
+  updateBgmChoiceUI();
+  if(currentBgmType === 'lobby'){ currentBgmType = ''; switchBgm('lobby'); }
+  toast('🎵 已切換大廳音樂');
+}
+function updateBgmChoiceUI(){
+  document.querySelectorAll('.bgm-choice').forEach(function(btn){
+    var idx = parseInt(btn.getAttribute('data-index'), 10);
+    btn.classList.toggle('active', idx === state.lobbyBgmIndex);
+  });
+}
+function closeSettings(){ var modal = document.getElementById('settings-modal'); if(modal) modal.classList.remove('active'); }
+function changeVolume(val){
+  state.bgmVolume = parseFloat(val);
+  var bgm = document.getElementById('bgm');
+  if(bgm) bgm.volume = state.bgmVolume;
+  if(bgm && bgm.paused && state.bgmVolume > 0) bgm.play().catch(function(){});
+}
+function logoutFromSettings(){ closeSettings(); setTimeout(function(){ logout(); }, 200); }
+
+function addExp(amount){
+  if(!amount || amount <= 0) return;
+  if(state.level >= MAX_LEVEL){ state.exp = 0; return; }
+  state.exp += amount;
+  var gained = 0;
+  while(state.level < MAX_LEVEL){
+    var need = expNeededForLevel(state.level);
+    if(state.exp < need) break;
+    state.exp -= need; state.level++; gained++;
+  }
+  if(state.level >= MAX_LEVEL){ state.level = MAX_LEVEL; state.exp = 0; }
+  if(gained > 0){ toast('🎉 升級！ Lv.' + state.level); }
+}
+function subExp(amount){
+  if(!amount || amount <= 0) return;
+  if(state.gmMode) return;
+  state.exp = Math.max(0, state.exp - amount);
+}
+
+function updatePlayerCard(){
+  var cluster = document.getElementById('top-left-cluster');
+  var card = document.getElementById('player-card');
+  if(!cluster || !card) return;
+  if(!state.user){ cluster.classList.remove('show'); card.classList.remove('show'); return; }
+  cluster.classList.add('show'); card.classList.add('show');
+
+  safeText('#dust-count', dustText(state.dust));
+  safeText('#pc-name', state.user.username || state.user.email || '冒險者');
+
+  var isMax = state.level >= MAX_LEVEL;
+  safeText('#pc-level', isMax ? 'Lv.MAX' : ('Lv.' + state.level));
+  var need = expNeededForLevel(state.level);
+  var pct = isMax ? 100 : Math.min(100, (state.exp / need) * 100);
+  var bar = document.getElementById('pc-exp-bar');
+  if(bar) bar.style.width = pct + '%';
+  safeText('#pc-exp', isMax ? 'MAX' : (fmtNum(state.exp) + ' / ' + fmtNum(need)));
+
+  var isGM = state.gmMode || (state.user && state.user.email === 'gm0101');
+  safeText('#menu-pc-playtime', isGM ? '♾️' : formatPlayTime(state.playTime));
+  safeText('#menu-pc-best', isGM ? '♾️' : (state.bestScore + ' 題'));
+  safeText('#menu-pc-id', state.user.email || state.user.id || '-');
+  var gmStatsBtn = document.getElementById('gm-stats-btn');
+  if(gmStatsBtn) gmStatsBtn.style.display = isGM ? 'block' : 'none';
+  renderAvatar(); updateHomeBtn();
+}
+function renderAvatar(){
+  var img = document.getElementById('player-avatar-img');
+  var fb = document.getElementById('player-avatar-fallback');
+  if(!img || !fb) return;
+  if(state.avatar){ img.src = state.avatar; img.style.display = 'block'; fb.style.display = 'none'; }
+  else{ img.removeAttribute('src'); img.style.display = 'none'; fb.style.display = 'flex'; }
+}
+function toggleProfileMenu(ev){
+  if(ev) ev.stopPropagation();
+  var m = document.getElementById('profile-menu');
+  if(!m) return;
+  m.classList.toggle('show');
+}
+function closeProfileMenu(){
+  var m = document.getElementById('profile-menu'); if(m) m.classList.remove('show');
+}
+document.addEventListener('click', function(e){
+  var m = document.getElementById('profile-menu');
+  if(!m || !m.classList.contains('show')) return;
+  var wrap = e.target.closest ? e.target.closest('.player-avatar-wrap') : null;
+  if(!wrap) closeProfileMenu();
+});
+
+function triggerAvatarUpload(){
+  if(!state.user){ toast('請先登入'); return; }
+  var inp = document.getElementById('avatar-file-input'); if(inp) inp.click();
+}
+function handleAvatarFile(e){
+  var file = e && e.target && e.target.files ? e.target.files[0] : null;
+  if(!file) return;
+  if(!/^image\//.test(file.type)){ toast('❌ 請選擇圖片檔案'); return; }
+  if(file.size > 8 * 1024 * 1024){ toast('❌ 圖片太大（上限 8MB）'); return; }
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    var img = new Image();
+    img.onload = function(){
+      try{
+        var SIZE = 160;
+        var canvas = document.createElement('canvas');
+        canvas.width = SIZE; canvas.height = SIZE;
+        var ctx = canvas.getContext('2d');
+        var min = Math.min(img.width, img.height);
+        var sx = (img.width - min) / 2;
+        var sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, SIZE, SIZE);
+        state.avatar = canvas.toDataURL('image/jpeg', 0.8);
+        saveAvatar(); saveLocal(); renderAvatar(); toast('✅ 頭像已更新');
+      }catch(err){ toast('❌ 頭像處理失敗'); }
+    };
+    img.onerror = function(){ toast('❌ 圖片讀取失敗'); };
+    img.src = ev.target.result;
+  };
+  reader.onerror = function(){ toast('❌ 檔案讀取失敗'); };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+function saveAvatar(){ if(state.user) SafeStorage.set('avatar_' + state.user.email, state.avatar); }
+function loadAvatar(){
+  if(state.avatar) return;
+  state.avatar = state.user ? SafeStorage.get('avatar_' + state.user.email) : null;
+}
+
+function openAvatarChoice(){
+  var modal = document.getElementById('avatar-modal');
+  var mImg = document.getElementById('choice-male-img');
+  var mEmoji = document.getElementById('choice-male-emoji');
+  var fImg = document.getElementById('choice-female-img');
+  var fEmoji = document.getElementById('choice-female-emoji');
+  if(ASSETS.playerMale){ mImg.src = ASSETS.playerMale; mImg.style.display = 'block'; mEmoji.style.display = 'none'; }
+  else{ mImg.style.display = 'none'; mEmoji.style.display = 'block'; }
+  if(ASSETS.playerFemale){ fImg.src = ASSETS.playerFemale; fImg.style.display = 'block'; fEmoji.style.display = 'none'; }
+  else{ fImg.style.display = 'none'; fEmoji.style.display = 'block'; }
+  if(modal) modal.classList.add('active');
+}
+function closeAvatarChoice(){ var modal = document.getElementById('avatar-modal'); if(modal) modal.classList.remove('active'); }
+function chooseGender(gender){
+  state.playerGender = gender; saveLocal();
+  toast('✅ 形象已更換為 ' + (gender === 'male' ? '男' : '女') + ' 冒險者');
+  closeAvatarChoice();
+}
+
+/* ===================== 每日簽到 ===================== */
+function openCheckin(){
+  updateCheckinUI();
+  var modal = document.getElementById('checkin-modal');
+  if(modal) modal.classList.add('active');
+}
+function closeCheckin(){
+  var modal = document.getElementById('checkin-modal');
+  if(modal) modal.classList.remove('active');
+}
+function updateCheckinUI(){
+  var c = state.checkin || { lastDate:'', streak:0, total:0 };
+  var today = todayStr();
+  var canClaim = c.lastDate !== today;
+  var desc = document.getElementById('checkin-desc');
+  var reward = document.getElementById('checkin-reward');
+  var btn = document.getElementById('checkin-claim-btn');
+  if(desc){
+    desc.innerHTML = '每天簽到可獲得 50 鑽石。<br>連續 7 天額外 +50，連續 30 天額外 +100。';
+  }
+  if(reward){
+    reward.innerHTML = '目前連續：<b style="color:#7cffb0">' + (c.streak || 0) + '</b> 天 ・ 累計：<b style="color:#7cffb0">' + (c.total || 0) + '</b> 天';
+  }
+  if(btn){
+    btn.disabled = !canClaim;
+    btn.textContent = canClaim ? '簽到' : '今日已簽到';
+  }
+}
+function claimCheckin(){
+  var c = state.checkin || { lastDate:'', streak:0, total:0 };
+  var today = todayStr();
+  if(c.lastDate === today){ toast('📅 今日已簽到'); return; }
+  var y = yesterdayStr();
+  if(c.lastDate === y) c.streak = (Number(c.streak)||0) + 1;
+  else c.streak = 1;
+  c.lastDate = today;
+  c.total = (Number(c.total)||0) + 1;
+  var reward = 50;
+  if(c.streak % 7 === 0) reward += 50;
+  if(c.streak % 30 === 0) reward += 100;
+  state.dust += reward;
+  state.checkin = c;
+  saveLocal(); updateHUD(); updateCheckinUI();
+  toast('🎁 簽到成功！+' + reward + ' 鑽石');
+}
+
+/* ===================== GM 題目統計 ===================== */
+function openGMStats(){
+  if(!(state.gmMode || (state.user && state.user.email === 'gm0101'))) return;
+  var modal = document.getElementById('gm-stats-modal');
+  var body = document.getElementById('gm-stats-body');
+  if(modal) modal.classList.add('active');
+  if(body) body.innerHTML = '載入中…';
+  fetch(GAS_API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({ action:'getQuestionStats' })
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(!data.ok){ if(body) body.textContent = '載入失敗：' + (data.msg || '未知錯誤'); return; }
+    var stats = data.stats || {};
+    var keys = Object.keys(stats);
+    if(!keys.length){ if(body) body.innerHTML = '<div style="text-align:center;padding:24px;color:#9aa0c4">暫無題目統計</div>'; return; }
+    keys.sort(function(a,b){
+      var sa = stats[a], sb = stats[b];
+      var ta = (sa.correct||0)+(sa.wrong||0), tb=(sb.correct||0)+(sb.wrong||0);
+      var ra = ta ? sa.wrong/ta : 0, rb = tb ? sb.wrong/tb : 0;
+      return rb - ra;
+    });
+    body.innerHTML = keys.map(function(k){
+      var s = stats[k] || {};
+      var correct = Number(s.correct)||0, wrong = Number(s.wrong)||0;
+      var total = correct + wrong;
+      var rate = total ? (wrong / total * 100) : 0;
+      var color = rate > 50 ? '#ff8a9a' : (rate > 30 ? '#ffd166' : '#7cffb0');
+      var label = k.replace(/^battle:/,'').replace(/^reinc:/,'');
+      return '<div style="padding:8px 0;border-bottom:1px solid rgba(140,130,255,.15)">' +
+        '<div style="color:#eef0ff;font-weight:700">' + escapeHtml(label) + '</div>' +
+        '<div style="font-size:12px;color:#c8cdf0;margin-top:3px">正確 ' + correct + ' ・ 錯誤 ' + wrong + ' ・ 錯誤率 <b style="color:' + color + '">' + rate.toFixed(1) + '%</b></div>' +
+      '</div>';
+    }).join('');
+  }).catch(function(err){
+    if(body) body.textContent = '載入失敗：' + err;
+  });
+}
+function closeGMStats(){
+  var modal = document.getElementById('gm-stats-modal');
+  if(modal) modal.classList.remove('active');
+}
+
+/* ===================== 任務分類 ===================== */
+function showLockedCategory(name){
+  toast('🔒 ' + name + ' 未開放');
+}
+
+var GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzyaNzCqmh4-JE7ZIEgZFAOYL21S1vVrrw_zcMUnyrUXCSrkwxFXZTslDHQOdnmgyNU/exec';
+function getSaveKey(){ return state.user ? 'rwxx_save_' + state.user.email.toLowerCase() : null; }
+var saveUserDataTimer = null;
+function loadLocal(){
+  var key = getSaveKey(); if(!key) return null;
+  var raw = SafeStorage.get(key); if(!raw) return null;
+  try{ return JSON.parse(raw); }catch(e){ return null; }
+}
+function saveLocal(){
+  var key = getSaveKey(); if(!key) return;
+  SafeStorage.set(key, JSON.stringify({
+    dust:state.dust, collection:state.collection, activeCardId:state.activeCardId,
+    team:state.team, evolutions:state.evolutions, playTime:state.playTime,
+    bestScore:state.bestScore, level:state.level, exp:state.exp,
+    playerGender:state.playerGender, pity:state.pity,
+    checkin:state.checkin, questionStats:state.questionStats, avatar:state.avatar
+  }));
+  saveUserData();
+}
+function saveUserData(immediate){
+  if(state.gmMode || !state.user || !state.user.email || !GAS_API_URL) return;
+  if(saveUserDataTimer) clearTimeout(saveUserDataTimer);
+  var doSave = function(){
+    var payload = {
+      action:'saveData', email:state.user.email, dust:state.dust, playTime:state.playTime,
+      collection:state.collection, activeCardId:state.activeCardId || '',
+      team:state.team, bestScore:state.bestScore, level:state.level, exp:state.exp,
+      playerGender:state.playerGender, evolutions:state.evolutions, pity:state.pity,
+      checkin:state.checkin, questionStats:state.questionStats, avatar:state.avatar || ''
+    };
+    fetch(GAS_API_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    }).catch(function(err){ console.warn('[saveUserData] 錯誤', err); });
+  };
+  if(immediate) doSave(); else saveUserDataTimer = setTimeout(doSave, 400);
+}
+function applyLocalOrNew(){
+  var local = loadLocal();
+  if(local){
+    state.dust = local.dust || 0;
+    state.playTime = local.playTime || 0;
+    state.collection = local.collection || {};
+    state.activeCardId = local.activeCardId || null;
+    state.team = Array.isArray(local.team) ? local.team : [];
+    state.evolutions = local.evolutions || {};
+    state.bestScore = local.bestScore || 0;
+    state.level = local.level || 1;
+    state.exp = local.exp || 0;
+    state.playerGender = local.playerGender || 'male';
+    state.pity = (local.pity && typeof local.pity.sinceSSR === 'number') ? local.pity : newPity();
+    state.checkin = local.checkin || { lastDate:'', streak:0, total:0 };
+    state.questionStats = local.questionStats || {};
+    state.avatar = local.avatar || null;
+  }else{
+    state.dust = 200; state.playTime = 0; state.collection = {}; state.activeCardId = null;
+    state.team = []; state.evolutions = {}; state.bestScore = 0; state.level = 1; state.exp = 0; state.playerGender = 'male';
+    state.pity = newPity();
+    state.checkin = { lastDate:'', streak:0, total:0 };
+    state.questionStats = {};
+    state.avatar = null;
+  }
+}
+async function loadUserData(email){
+  if(!GAS_API_URL || !email){ applyLocalOrNew(); return; }
+  try{
+    var res = await fetch(GAS_API_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:'loadData', email:email})
+    });
+    var data = await res.json();
+    if(data.ok && data.exists){
+      state.dust = data.dust || 0; state.playTime = data.playTime || 0;
+      state.collection = data.collection || {}; state.activeCardId = data.activeCardId || null;
+      state.team = Array.isArray(data.team) ? data.team : [];
+      state.evolutions = data.evolutions || {};
+      state.bestScore = data.bestScore || 0; state.level = data.level || 1;
+      state.exp = data.exp || 0; state.playerGender = data.playerGender || 'male';
+      state.pity = (data.pity && typeof data.pity.sinceSSR === 'number') ? data.pity : newPity();
+      state.checkin = data.checkin || { lastDate:'', streak:0, total:0 };
+      state.questionStats = data.questionStats || {};
+      state.avatar = data.avatar || null;
+      return;
+    }
+  }catch(err){ console.warn('載入失敗', err); }
+  applyLocalOrNew();
+}
+function showLoading(callback, delay){
+  var loader = document.getElementById('loading-screen');
+  if(loader) loader.classList.add('active');
+  setTimeout(function(){
+    if(loader) loader.classList.remove('active');
+    if(callback) callback();
+  }, delay || 800);
+}
+function updateHUD(){
+  safeText('#dust-count', dustText(state.dust));
+  safeText('#gacha-dust', dustText(state.dust));
+  updatePlayerCard();
+  updatePityDisplay();
+}
+
+function showView(view){
+  if(view === 'team'){ state.currentInvTab = 'team'; view = 'inventory'; }
+
+  var screens = document.querySelectorAll('.screen');
+  for(var i=0;i<screens.length;i++) screens[i].classList.remove('active');
+  var hud = $('#hud-layer'), forest = $('#forest-scene');
+
+  if(view === 'game'){
+    if(hud) hud.style.display = 'block';
+    if(forest) forest.style.display = 'block';
+    switchBgm('game');
+  }else{
+    if(hud) hud.style.display = 'none';
+    if(forest) forest.style.display = 'none';
+    if(state.gameActive){
+      state.gameActive = false;
+      if(state.rafId){ cancelAnimationFrame(state.rafId); state.rafId = null; }
+    }
+    if(view !== 'auth' && view !== 'reincarnation') switchBgm('lobby');
+  }
+
+  if(view === 'auth'){ var a = $('#auth-screen'); if(a) a.classList.add('active'); }
+  if(view === 'main'){
+    safeText('#menu-user-name', state.user ? (state.user.username || state.user.email) : '冒險者');
+    renderPoem(); updateHUD(); updateCheckinUI();
+    var m = $('#main-menu'); if(m) m.classList.add('active');
+  }
+  if(view === 'gacha'){ updateHUD(); updatePityDisplay(); var g = $('#gacha-screen'); if(g) g.classList.add('active'); }
+  if(view === 'inventory'){ switchInvTab(state.currentInvTab); var inv = $('#inventory-screen'); if(inv) inv.classList.add('active'); }
+  if(view === 'level'){ var l = $('#level-select'); if(l) l.classList.add('active'); }
+  if(view === 'gaoxiao'){ var gx = $('#gaoxiao-level-select'); if(gx) gx.classList.add('active'); }
+  if(view === 'reincarnation'){ var r = $('#reincarnation-screen'); if(r) r.classList.add('active'); }
+  updatePlayerCard();
+  updateHomeBtn();
+}
+
+function logout(){
+  state.gameActive = false;
+  if(state.rafId){ cancelAnimationFrame(state.rafId); state.rafId = null; }
+  if(state.user && !state.gmMode){
+    saveUserData(true);
+    var key = getSaveKey(); if(key) SafeStorage.remove(key);
+  }
+  var bgm = document.getElementById('bgm');
+  if(bgm){ try{ bgm.pause(); bgm.currentTime = 0; }catch(e){} }
+  currentBgmType = '';
+
+  state.user = null; state.gmMode = false; state.battle = null; state.dust = 0;
+  state.collection = {}; state.activeCardId = null; state.team = []; state.evolutions = {};
+  state.playTime = 0; state.playSeconds = 0; state.bestScore = 0; state.level = 1; state.exp = 0;
+  state.avatar = null; state.playerGender = 'male'; state.pity = newPity();
+  state.checkin = { lastDate:'', streak:0, total:0 };
+  state.questionStats = {};
+
+  var em = $('#auth-email'); if(em) em.value = '';
+  var pw = $('#auth-password'); if(pw) pw.value = '';
+  var un = $('#auth-username'); if(un) un.value = '';
+  var msg = $('#auth-msg'); if(msg){ msg.textContent = ''; msg.className = 'auth-msg'; }
+
+  state.authMode = 'login';
+  updateAuthUI(); updatePlayerCard(); showView('auth');
+  toast('👋 已登出');
+}
+
+async function handleAuth(){
+  switchBgm('lobby');
+  var isLogin = state.authMode === 'login';
+  var username = (($('#auth-username')||{}).value || '').trim();
+  var email = (($('#auth-email')||{}).value || '').trim();
+  var password = (($('#auth-password')||{}).value || '').trim();
+  var msgEl = $('#auth-msg'), btn = $('#auth-submit');
+
+  if(isLogin && email === 'gm0101' && password === 'gm0101'){
+    if(msgEl){ msgEl.className = 'auth-msg ok'; msgEl.textContent = '✅ GM 管理員登入成功'; }
+    if(btn) btn.disabled = true;
+    showLoading(function(){
+      state.user = { id:'GM', username:'GM管理員', email:'gm0101' };
+      state.gmMode = true; state.dust = 9999999;
+      state.collection = {
+        'ssr_face':1, 'ssr_word':1, 'ssr_act':1, 'ssr_mind':1, 'ssr_exp':1, 'rn_admin':1
+      };
+      state.activeCardId = 'rn_admin';
+      state.team = ['rn_admin'];
+      state.playTime = 0; state.playSeconds = 0; state.bestScore = 999;
+      state.level = MAX_LEVEL; state.exp = 0; state.playerGender = 'male';
+      state.pity = newPity();
+      state.checkin = { lastDate:'', streak:0, total:0 };
+      state.questionStats = {};
+      loadAvatar(); enterGame();
+      if(btn) btn.disabled = false;
+    }, 800);
+    return;
+  }
+
+  if(!email || !password){ if(msgEl){ msgEl.className='auth-msg err'; msgEl.textContent='請填寫帳號與密碼'; } return; }
+  if(password.length < 6){ if(msgEl){ msgEl.className='auth-msg err'; msgEl.textContent='密碼至少需要 6 個字元，不建議使用複製密碼=='; } return; }
+  if(!isLogin){
+    if(!username){ if(msgEl){ msgEl.className='auth-msg err'; msgEl.textContent='請填寫用戶名稱'; } return; }
+    if(username.length < 2){ if(msgEl){ msgEl.className='auth-msg err'; msgEl.textContent='名稱至少需要 2 個字元'; } return; }
+  }
+
+  if(msgEl){ msgEl.className='auth-msg'; msgEl.textContent = isLogin ? '驗證中…' : '註冊中…'; }
+  if(btn) btn.disabled = true;
+
+  try{
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function(){ controller.abort(); }, 4000);
+    var res = await fetch(GAS_API_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({action:isLogin?'login':'register', username:username, email:email, password:password}),
+      signal:controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    var data = await res.json();
+    if(data.ok){
+      if(isLogin){
+        state.user = { id:data.id, username:data.username || email, email:(data.email || email).toLowerCase() };
+        state.gmMode = false;
+        if(msgEl){ msgEl.className='auth-msg ok'; msgEl.textContent = '載入數據中…'; }
+        await loadUserData(state.user.email);
+        loadAvatar();
+        showLoading(function(){ enterGame(); if(btn) btn.disabled = false; }, 1000);
+      }else{
+        if(msgEl){ msgEl.className='auth-msg ok'; msgEl.textContent = data.msg; }
+        setTimeout(function(){
+          state.authMode = 'login'; updateAuthUI();
+          var un = $('#auth-username'); if(un) un.value='';
+          var pw = $('#auth-password'); if(pw) pw.value='';
+          if(msgEl){ msgEl.className='auth-msg ok'; msgEl.textContent='✅ 註冊成功！請登入'; }
+          if(btn) btn.disabled = false;
+        }, 800);
+      }
+    }else{
+      if(msgEl){ msgEl.className='auth-msg err'; msgEl.textContent = data.msg || '失敗'; }
+      if(btn) btn.disabled = false;
+    }
+  }catch(err){
+    console.warn('無法連線到伺服器，啟用本機離線模式', err);
+    if(msgEl){ msgEl.className='auth-msg ok'; msgEl.textContent='✅ 使用本機離線模式登入'; }
+    state.user = { id:'local', username:isLogin ? email : username, email:email.toLowerCase() };
+    state.gmMode = false;
+    applyLocalOrNew(); loadAvatar();
+    showLoading(function(){ enterGame(); if(btn) btn.disabled = false; }, 1000);
+  }
+}
+
+function updateAuthUI(){
+  var isLogin = state.authMode === 'login';
+  var uf = $('#username-field'); if(uf) uf.style.display = isLogin ? 'none' : 'block';
+  var sb = $('#auth-submit'); if(sb) sb.textContent = isLogin ? '登入' : '註冊新帳號';
+  var st = $('#auth-switch-text'); if(st) st.textContent = isLogin ? '還沒有帳號？' : '已經有帳號？';
+  var sw = $('#auth-switch-btn'); if(sw) sw.textContent = isLogin ? '註冊新帳號' : '返回登入';
+}
+function toggleAuthMode(){
+  state.authMode = (state.authMode === 'login') ? 'register' : 'login';
+  updateAuthUI();
+  var msg = $('#auth-msg'); if(msg) msg.textContent = '';
+  var un = $('#auth-username'); if(un) un.value = '';
+  var pw = $('#auth-password'); if(pw) pw.value = '';
+}
+function enterGame(){
+  var a = $('#auth-screen'); if(a) a.classList.remove('active');
+  updatePlayerCard(); updateHUD(); showView('main');
+}
+
+/* ===================== 抽卡 ===================== */
+function rollRarity(){
+  var r = Math.random();
+  if(r < 0.005) return 'Unknown';
+  if(r < 0.03)  return 'SSR';
+  if(r < 0.15)  return 'SR';
+  if(r < 0.40)  return 'R';
+  return 'N';
+}
+function pickCard(rarity){
+  var pool = [];
+  if(rarity === 'SSR'){
+    pool = CARDS.filter(function(c){
+      return c.rarity === 'SSR' && !(state.collection && state.collection[c.id] > 0);
+    });
+  }else{
+    for(var i=0;i<CARDS.length;i++){
+      if(CARDS[i].rarity === rarity) pool.push(CARDS[i]);
+    }
+  }
+  if(!pool.length){
+    if(rarity === 'SSR') return pickCard('SR');
+    pool = CARDS.filter(function(c){ return c.rarity !== 'RN'; });
+  }
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+function updatePityDisplay(){
+  var el = document.getElementById('pity-remaining');
+  if(!el) return;
+  if(getUnownedSSRCards().length === 0){ el.textContent = '已全收集'; return; }
+  var remaining = 50 - ((state.pity.sinceSSR || 0) % 50);
+  if(remaining <= 0) remaining = 50;
+  el.textContent = remaining;
+}
+function doGacha(count){
+  var cost = count === 1 ? GACHA_COST_SINGLE : GACHA_COST_MULTI;
+  if(state.dust < cost){ toast('💎 塵石不足！'); return; }
+  state.dust -= cost;
+
+  var results = [];
+  for(var i=0;i<count;i++){
+    var forceSSR = false;
+    if((state.pity.sinceSSR || 0) >= 49 && getUnownedSSRCards().length > 0) forceSSR = true;
+    var rar = forceSSR ? 'SSR' : rollRarity();
+    if(rar === 'SSR' && getUnownedSSRCards().length === 0) rar = 'SR';
+    if(count === 10 && i === 9 && rar === 'N' && results.every(function(c){ return c.rarity === 'N'; })){
+      rar = 'SR';
+    }
+    var card = pickCard(rar);
+    if(!card) card = pickCard('SR');
+    results.push(card);
+    if(card.rarity === 'SSR') state.pity.sinceSSR = 0;
+    else state.pity.sinceSSR = (state.pity.sinceSSR || 0) + 1;
+  }
+  results.forEach(function(c){ state.collection[c.id] = (state.collection[c.id] || 0) + 1; });
+  if(!state.activeCardId) state.activeCardId = results[0].id;
+
+  updateHUD(); updatePityDisplay(); saveLocal(); showGachaResult(results);
+  if(results.some(function(c){ return c.rarity === 'SSR'; })) toast('✨ SSR 降臨！太強了！');
+  if(results.some(function(c){ return c.rarity === 'Unknown'; })) toast('🎁 梁老師，登場！');
+}
+function showGachaResult(results){
+  var grid = $('#gacha-result-cards'); if(!grid) return;
+  grid.className = 'gacha-result-cards' + (results.length === 1 ? ' single' : '');
+  grid.innerHTML = results.map(function(c,i){
+    var r = RARITY[c.rarity] || RARITY.N;
+    var elemColor = ELEMENT_COLOR[c.element] || '#888';
+    var imgHtml = '';
+    var emojiHtml = '<div class="gcard-emoji">' + c.emoji + '</div>';
+    if(c.img){
+      imgHtml = '<img src="' + c.img + '" class="gcard-img" alt="'+c.name+'" onload="this.style.display=\'block\'; this.nextElementSibling.style.display=\'none\';" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';">';
+    }
+    var elemText = (ELEMENT_EMOJI[c.element]||'') ? ((ELEMENT_EMOJI[c.element]||'') + ' ' + (c.element||'')) : (c.element||'');
+    return '<div class="gcard ' + c.rarity + '" style="--rc:' + r.color + ';animation-delay:' + (i*0.06) + 's">' +
+      '<div class="gcard-rarity" style="background:' + r.color + '">' + c.rarity + '</div>' +
+      imgHtml + emojiHtml +
+      '<div class="gcard-name">' + c.name + '</div>' +
+      '<div class="gcard-elem" style="background:'+elemColor+'">' + elemText + '</div>' +
+      '</div>';
+  }).join('');
+  var gr = $('#gacha-result'); if(gr) gr.classList.add('active');
+}
+function closeGachaResult(){ var gr = $('#gacha-result'); if(gr) gr.classList.remove('active'); updateHUD(); }
+
+/* ===================== 背包 / 圖鑑 / 隊伍 ===================== */
+function switchInvTab(tab){
+  state.currentInvTab = tab;
+
+  document.querySelectorAll('.inv-tab').forEach(function(btn){
+    btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+  });
+
+  var bagGrid = document.getElementById('inventory-grid');
+  var dexGrid = document.getElementById('dex-grid');
+  var teamPanel = document.getElementById('team-panel');
+  var actions = document.getElementById('inv-actions');
+
+  if(bagGrid) bagGrid.style.display = (tab === 'bag') ? 'grid' : 'none';
+  if(dexGrid) dexGrid.style.display = (tab === 'dex') ? 'grid' : 'none';
+  if(teamPanel) teamPanel.style.display = (tab === 'team') ? 'block' : 'none';
+  if(actions) actions.style.display = (tab === 'team') ? 'none' : 'flex';
+
+  if(tab === 'bag') renderInventory();
+  else if(tab === 'dex') renderDex();
+  else renderTeam();
+}
+
+function renderInventory(){
+  var grid = $('#inventory-grid'); if(!grid) return;
+  var owned = CARDS.filter(function(c){ return (state.collection[c.id]||0) > 0; });
+  owned = sortCards(owned);
+  safeText('#inv-count', owned.length);
+  if(owned.length === 0){
+    grid.innerHTML = '<div class="inv-empty">背包空空如也<br>先去「抽卡」召喚你的第一隻怪談吧！</div>'; return;
+  }
+  grid.innerHTML = owned.map(function(c){
+    var r = RARITY[c.rarity] || RARITY.N;
+    var elemColor = ELEMENT_COLOR[c.element] || '#888';
+    var inTeam = state.team.indexOf(c.id) >= 0;
+    var imgHtml = '';
+    var emojiHtml = '<div class="inv-emoji">' + c.emoji + '</div>';
+    if(c.img){
+      imgHtml = '<img src="' + c.img + '" class="inv-img" alt="'+c.name+'" onload="this.style.display=\'block\'; this.nextElementSibling.style.display=\'none\';" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';">';
+    }
+    var canEvo = (state.collection[c.id] || 0) >= 2 && c.rarity !== 'SSR';
+    var evoBtn = canEvo ? '<button class="evo-trigger-btn" onclick="event.stopPropagation(); openEvolution(\'' + c.id + '\')">⭐ 進化</button>' : '';
+    var elemText = (ELEMENT_EMOJI[c.element]||'') ? ((ELEMENT_EMOJI[c.element]||'') + ' ' + (c.element||'')) : (c.element||'');
+    return '<div class="inv-card ' + (inTeam?'active':'') + '" style="--rc:' + r.color + '" onclick="setActiveCard(\'' + c.id + '\')">' +
+      '<div class="inv-badge" style="background:' + r.color + '">' + c.rarity + '</div>' +
+      '<div class="inv-count-badge">x' + state.collection[c.id] + '</div>' +
+      imgHtml + emojiHtml +
+      '<div class="inv-name">' + c.name + '</div>' +
+      '<div class="inv-elem" style="background:'+elemColor+'">' + elemText + '</div>' +
+      (inTeam ? '<div class="inv-active-tag">出戰</div>' : '') +
+      evoBtn +
+    '</div>';
+  }).join('');
+}
+
+function renderDex(){
+  var grid = $('#dex-grid'); if(!grid) return;
+  var list = sortCards(CARDS);
+  grid.innerHTML = list.map(function(c){
+    var r = RARITY[c.rarity] || RARITY.N;
+    var elemColor = ELEMENT_COLOR[c.element] || '#888';
+    var count = state.collection[c.id] || 0;
+    var isOwned = count > 0;
+    var imgHtml = '';
+    var emojiHtml = '<div class="inv-emoji">' + c.emoji + '</div>';
+    if(c.img){
+      imgHtml = '<img src="' + c.img + '" class="inv-img" alt="' + c.name + '" onload="this.style.display=\'block\'; this.nextElementSibling.style.display=\'none\';" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';">';
+    }
+    var canEvo = count >= 2 && c.rarity !== 'SSR';
+    var evoBtn = canEvo ? '<button class="evo-trigger-btn" onclick="event.stopPropagation(); openEvolution(\'' + c.id + '\')">⭐ 進化</button>' : '';
+    var elemText = (ELEMENT_EMOJI[c.element]||'') ? ((ELEMENT_EMOJI[c.element]||'') + ' ' + (c.element||'')) : (c.element||'');
+    return '<div class="dex-card ' + (isOwned ? 'owned' : 'locked') + '" style="--rc:' + r.color + '" onclick="' + (isOwned ? 'openEvolution(\'' + c.id + '\')' : '') + '">' +
+      '<div class="inv-badge" style="background:' + r.color + '">' + c.rarity + '</div>' +
+      (isOwned ? '<div class="inv-count-badge">x' + count + '</div>' : '') +
+      imgHtml + emojiHtml +
+      '<div class="inv-name">' + (isOwned ? c.name : '???') + '</div>' +
+      '<div class="inv-elem" style="background:'+elemColor+'">' + elemText + '</div>' +
+      evoBtn +
+    '</div>';
+  }).join('');
+}
+
+/* ===================== 隊伍 ===================== */
+function renderTeam(){
+  var slotsEl = document.getElementById('team-slots');
+  var rosterEl = document.getElementById('team-roster-grid');
+  if(!slotsEl || !rosterEl) return;
+
+  slotsEl.innerHTML = '';
+  for(var i=0; i<3; i++){
+    var cid = state.team[i];
+    var c = cid ? getCard(cid) : null;
+    var slot = document.createElement('div');
+    slot.className = 'team-slot' + (c ? ' filled' : '');
+    if(c){
+      var r = RARITY[c.rarity] || RARITY.N;
+      var elemColor = ELEMENT_COLOR[c.element] || '#888';
+      slot.style.setProperty('--rc', r.color);
+      var imgHtml = c.img
+        ? '<img src="'+c.img+'" style="width:100%;height:100%;object-fit:cover;">'
+        : '<div style="font-size:44px;">'+c.emoji+'</div>';
+      var elemText = (ELEMENT_EMOJI[c.element]||'') ? ((ELEMENT_EMOJI[c.element]||'') + (c.element||'')) : (c.element||'');
+      slot.innerHTML =
+        '<div style="position:absolute;top:4px;left:4px;font-size:10px;font-weight:900;color:#0b0c1a;background:'+r.color+';padding:1px 6px;border-radius:6px;z-index:1;font-family:var(--font-body)">'+c.rarity+'</div>' +
+        '<div style="position:absolute;top:4px;right:4px;font-size:11px;font-weight:900;color:#fff;background:'+elemColor+';padding:2px 7px;border-radius:6px;z-index:1;font-family:var(--font-body);border:1px solid rgba(0,0,0,.4)">'+elemText+'</div>' +
+        imgHtml +
+        '<div class="slot-name">'+c.name+'</div>';
+      (function(idx){ slot.onclick = function(){ removeFromTeam(idx); }; })(i);
+    }else{
+      slot.innerHTML = '<div style="font-size:38px;color:rgba(140,130,255,.4)">+</div>';
+    }
+    slotsEl.appendChild(slot);
+  }
+
+  var owned = CARDS.filter(function(c){ return (state.collection[c.id]||0) > 0; });
+  owned = sortCards(owned);
+  if(owned.length === 0){
+    rosterEl.innerHTML = '<div class="inv-empty" style="grid-column:1/-1">背包中還沒有角色<br>先去「抽卡」召喚吧！</div>';
+    return;
+  }
+  rosterEl.innerHTML = owned.map(function(c){
+    var r = RARITY[c.rarity] || RARITY.N;
+    var elemColor = ELEMENT_COLOR[c.element] || '#888';
+    var inTeam = state.team.indexOf(c.id) >= 0;
+    var imgHtml = '';
+    var emojiHtml = '<div class="inv-emoji">' + c.emoji + '</div>';
+    if(c.img){
+      imgHtml = '<img src="' + c.img + '" class="inv-img" alt="'+c.name+'" onload="this.style.display=\'block\'; this.nextElementSibling.style.display=\'none\';" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'block\';">';
+    }
+    var elemText = (ELEMENT_EMOJI[c.element]||'') ? ((ELEMENT_EMOJI[c.element]||'') + ' ' + (c.element||'')) : (c.element||'');
+    return '<div class="inv-card ' + (inTeam?'active':'') + '" style="--rc:' + r.color + '" onclick="toggleTeamMember(\'' + c.id + '\')">' +
+      '<div class="inv-badge" style="background:' + r.color + '">' + c.rarity + '</div>' +
+      '<div class="inv-count-badge">x' + state.collection[c.id] + '</div>' +
+      imgHtml + emojiHtml +
+      '<div class="inv-name">' + c.name + '</div>' +
+      '<div class="inv-elem" style="background:'+elemColor+'">' + elemText + '</div>' +
+      (inTeam ? '<div class="inv-active-tag">出戰</div>' : '') +
+    '</div>';
+  }).join('');
+}
+
+function toggleTeamMember(cardId){
+  var idx = state.team.indexOf(cardId);
+  if(idx >= 0){ state.team.splice(idx, 1); toast('已從隊伍移除'); }
+  else{
+    if(state.team.length >= 3){ toast('❌ 隊伍已滿（最多 3 位）'); return; }
+    state.team.push(cardId); toast('✅ 已加入隊伍');
+  }
+  state.activeCardId = state.team[0] || null;
+  saveLocal(); renderTeam();
+  if(state.currentInvTab === 'bag') renderInventory();
+}
+function removeFromTeam(idx){
+  if(idx < 0 || idx >= state.team.length) return;
+  state.team.splice(idx, 1);
+  state.activeCardId = state.team[0] || null;
+  saveLocal(); renderTeam();
+}
+function setActiveCard(id){
+  if(state.team.indexOf(id) >= 0){ toast('此角色已在隊伍中'); return; }
+  if(state.team.length >= 3){ toast('❌ 隊伍已滿，請到「隊伍」頁籤調整'); return; }
+  state.team.push(id);
+  state.activeCardId = state.team[0] || null;
+  saveLocal(); renderInventory();
+  toast('✅ 已加入隊伍');
+}
+
+/* ===================== 進化 ===================== */
+var currentEvoRate = 0;
+function openEvolution(cardId){
+  var c = getCard(cardId);
+  if(!c) return;
+  if(c.rarity === 'SSR'){ toast('❌ SSR 強化未開放'); return; }
+  var count = state.collection[cardId] || 0;
+  if(count < 2){ toast('❌ 需要至少 2 張相同卡片才能進化'); return; }
+
+  state.currentEvoCardId = cardId;
+  currentEvoRate = RARITY[c.rarity] ? RARITY[c.rarity].rate : 0.001;
+
+  var currentLevel = state.evolutions[cardId] || 0;
+  var maxAmount = count - 1;
+
+  safeText('#evo-title', c.name + ' 進化');
+  safeText('#evo-owned-count', count);
+  safeText('#evo-current-level', currentLevel);
+  safeText('#evo-max-amount', maxAmount);
+
+  var input = $('#evo-amount-input');
+  if(input){ input.max = maxAmount; input.value = 1; }
+  updateEvoPreview();
+
+  var modal = $('#evolution-modal');
+  if(modal) modal.classList.add('active');
+}
+function updateEvoPreview(){
+  var input = $('#evo-amount-input');
+  if(!input) return;
+  var amount = parseInt(input.value) || 0;
+  var maxAmount = parseInt(input.max) || 1;
+  if(amount < 1){ amount = 1; input.value = 1; }
+  if(amount > maxAmount){ amount = maxAmount; input.value = maxAmount; }
+  var cardId = state.currentEvoCardId;
+  if(!cardId) return;
+  var currentLevel = state.evolutions[cardId] || 0;
+  var curBonus = (currentLevel * currentEvoRate * 100).toFixed(1);
+  var nextBonus = ((currentLevel + amount) * currentEvoRate * 100).toFixed(1);
+  safeText('#evo-current-bonus', '當前加成: +' + curBonus + '%');
+  safeText('#evo-next-bonus', '進化後: +' + nextBonus + '%');
+}
+function closeEvolution(){
+  state.currentEvoCardId = null;
+  var modal = $('#evolution-modal');
+  if(modal) modal.classList.remove('active');
+}
+function doEvolution(amount){
+  var cardId = state.currentEvoCardId;
+  if(!cardId) return;
+  var evoC = getCard(cardId);
+  if(evoC && evoC.rarity === 'SSR'){ toast('❌ SSR 強化未開放'); return; }
+  var count = state.collection[cardId] || 0;
+  var maxAmount = count - 1;
+  amount = parseInt(amount) || 1;
+  if(amount > maxAmount) amount = maxAmount;
+  if(amount < 1){ toast('❌ 卡片數量不足'); return; }
+
+  state.collection[cardId] -= amount;
+  state.evolutions[cardId] = (state.evolutions[cardId] || 0) + amount;
+
+  saveLocal(); closeEvolution();
+  playTransformationEffect(cardId, amount, function(){
+    updateHUD();
+    toast('✨ 進化成功！消耗了 ' + amount + ' 張，等級提升 ' + amount + ' 級！');
+    if(state.currentInvTab === 'bag') renderInventory();
+    else if(state.currentInvTab === 'dex') renderDex();
+    else renderTeam();
+    renderTeam();
+  });
+}
+function doBatchEvolution(){
+  var input = $('#evo-amount-input'); if(!input) return;
+  doEvolution(parseInt(input.value) || 1);
+}
+function playTransformationEffect(cardId, amount, callback){
+  var c = getCard(cardId);
+  if(!c){ if(callback) callback(); return; }
+  var overlay = document.getElementById('transformation-overlay');
+  var tfBg = document.getElementById('tf-bg-glow');
+  var tfCardBox = document.getElementById('tf-card-box');
+  var tfImg = document.getElementById('tf-card-img');
+  var tfEmoji = document.getElementById('tf-card-emoji');
+  var tfText = document.getElementById('tf-text');
+  var tfStars = document.getElementById('tf-stars');
+  if(c.img){ tfImg.src = c.img; tfImg.style.display = 'block'; tfEmoji.style.display = 'none'; }
+  else{ tfImg.style.display = 'none'; tfEmoji.style.display = 'block'; tfEmoji.textContent = c.emoji; }
+
+  tfBg.classList.remove('active');
+  tfCardBox.classList.remove('active');
+  tfText.classList.remove('active');
+  tfText.textContent = '✨ ' + c.name + ' 進化成功！✨';
+  tfStars.innerHTML = '';
+  overlay.classList.add('active');
+
+  for(var i=0; i<20; i++){
+    var star = document.createElement('div');
+    star.className = 'tf-star';
+    var angle = Math.random() * Math.PI * 2;
+    var distance = 100 + Math.random() * 200;
+    var size = 4 + Math.random() * 8;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.left = '50%';
+    star.style.top = '50%';
+    star.style.setProperty('--dx', (Math.cos(angle) * distance) + 'px');
+    star.style.setProperty('--dy', (Math.sin(angle) * distance) + 'px');
+    star.style.animationDelay = (Math.random() * 0.5) + 's';
+    tfStars.appendChild(star);
+  }
+  setTimeout(function(){ tfBg.classList.add('active'); }, 100);
+  setTimeout(function(){ tfCardBox.classList.add('active'); }, 600);
+  setTimeout(function(){ tfText.classList.add('active'); }, 1200);
+  setTimeout(function(){ overlay.classList.remove('active'); if(callback) callback(); }, 3200);
+}
+
+/* ===================== 合成 ===================== */
+function getCardsCountByRarity(rarity){
+  var count = 0;
+  CARDS.forEach(function(c){ if(c.rarity === rarity) count += (state.collection[c.id] || 0); });
+  return count;
+}
+function openFusionModal(){ updateFusionUI(); var modal = $('#fusion-modal'); if(modal) modal.classList.add('active'); }
+function closeFusionModal(){ var modal = $('#fusion-modal'); if(modal) modal.classList.remove('active'); }
+function updateFusionUI(){
+  var nCount = getCardsCountByRarity('N');
+  var rCount = getCardsCountByRarity('R');
+  var srCount = getCardsCountByRarity('SR');
+  safeText('#fusion-n-count', nCount);
+  safeText('#fusion-r-count', rCount);
+  safeText('#fusion-sr-count', srCount);
+  var nBtn = $('#fusion-btn-n'); if(nBtn) nBtn.disabled = nCount < 5;
+  var rBtn = $('#fusion-btn-r'); if(rBtn) rBtn.disabled = rCount < 5;
+  var srBtn = $('#fusion-btn-sr');
+  if(srBtn){ srBtn.disabled = true; srBtn.textContent = 'SSR 合成（未開放）'; }
+}
+function openFusionConfirm(rarity){
+  if(rarity === 'SR'){ toast('❌ SSR 合成未開放'); return; }
+  state.pendingFusionRarity = rarity;
+  var nextRarity = rarity === 'N' ? 'R' : 'SR';
+  safeText('#confirm-fusion-desc', '確定要消耗 5 張 ' + rarity + ' 級卡片，隨機合成 1 張 ' + nextRarity + ' 級卡片嗎？');
+  var modal = $('#confirm-fusion-modal');
+  if(modal) modal.classList.add('active');
+}
+function closeConfirmFusion(){
+  state.pendingFusionRarity = null;
+  var modal = $('#confirm-fusion-modal');
+  if(modal) modal.classList.remove('active');
+}
+function confirmFusion(){
+  var rarity = state.pendingFusionRarity;
+  if(!rarity) return;
+  if(rarity === 'SR'){ toast('❌ SSR 合成未開放'); closeConfirmFusion(); return; }
+  var total = getCardsCountByRarity(rarity);
+  if(total < 5){ toast('❌ 該級別卡片不足 5 張'); closeConfirmFusion(); return; }
+  closeConfirmFusion(); closeFusionModal();
+
+  var needToDeduct = 5;
+  var pool = CARDS.filter(function(c){ return c.rarity === rarity && (state.collection[c.id] || 0) > 0; });
+  while(needToDeduct > 0 && pool.length > 0){
+    var randomIndex = Math.floor(Math.random() * pool.length);
+    var c = pool[randomIndex];
+    var available = state.collection[c.id];
+    var deduct = Math.min(available, needToDeduct);
+    state.collection[c.id] -= deduct;
+    needToDeduct -= deduct;
+    if(state.collection[c.id] <= 0) pool.splice(randomIndex, 1);
+  }
+  var nextRarity = rarity === 'N' ? 'R' : 'SR';
+  var nextPool = CARDS.filter(function(c){ return c.rarity === nextRarity; });
+  if(nextPool.length > 0){
+    var resultCard = nextPool[Math.floor(Math.random() * nextPool.length)];
+    state.collection[resultCard.id] = (state.collection[resultCard.id] || 0) + 1;
+    saveLocal(); updateHUD(); renderInventory(); updateFusionUI();
+    playFusionEffect(resultCard, function(){
+      toast('✨ 合成成功！獲得 ' + resultCard.name + ' (' + nextRarity + ')');
+    });
+  }else{
+    toast('❌ 合成失敗，沒有更高級別的卡片池');
+  }
+}
+function playFusionEffect(resultCard, callback){
+  var overlay = document.getElementById('fusion-effect-overlay');
+  var particlesBox = document.getElementById('fusion-particles');
+  var newCardBox = document.getElementById('fusion-new-card');
+  var tfImg = document.getElementById('fusion-card-img');
+  var tfEmoji = document.getElementById('fusion-card-emoji');
+  var tfText = document.getElementById('fusion-text');
+  var flash = document.getElementById('fusion-flash');
+  if(resultCard.img){ tfImg.src = resultCard.img; tfImg.style.display = 'block'; tfEmoji.style.display = 'none'; }
+  else{ tfImg.style.display = 'none'; tfEmoji.style.display = 'block'; tfEmoji.textContent = resultCard.emoji; }
+
+  newCardBox.classList.remove('active');
+  tfText.classList.remove('active');
+  particlesBox.innerHTML = '';
+  flash.style.display = 'none';
+  overlay.classList.add('active');
+
+  for(var i=0; i<30; i++){
+    var p = document.createElement('div');
+    p.className = 'fusion-particle';
+    var angle = Math.random() * Math.PI * 2;
+    var dist = 50 + Math.random() * 150;
+    var size = 4 + Math.random() * 10;
+    var color = ['#ffd166', '#ff8c42', '#c084fc', '#38bdf8'][Math.floor(Math.random()*4)];
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left = '50%';
+    p.style.top = '50%';
+    p.style.color = color;
+    p.style.setProperty('--tx', (Math.cos(angle) * dist) + 'px');
+    p.style.setProperty('--ty', (Math.sin(angle) * dist) + 'px');
+    p.style.animationDelay = (Math.random() * 0.3) + 's';
+    particlesBox.appendChild(p);
+  }
+  setTimeout(function(){
+    particlesBox.innerHTML = '';
+    for(var i=0; i<20; i++){
+      var p = document.createElement('div');
+      p.className = 'fusion-particle-gather';
+      var angle = Math.random() * Math.PI * 2;
+      var dist = 50 + Math.random() * 150;
+      p.style.left = '50%'; p.style.top = '50%';
+      p.style.setProperty('--sx', (Math.cos(angle) * dist) + 'px');
+      p.style.setProperty('--sy', (Math.sin(angle) * dist) + 'px');
+      p.style.animationDelay = (Math.random() * 0.2) + 's';
+      particlesBox.appendChild(p);
+    }
+  }, 1000);
+  setTimeout(function(){
+    flash.style.display = 'block';
+    flash.style.animation = 'none'; flash.offsetHeight;
+    flash.style.animation = 'flash 0.5s ease-out forwards';
+    newCardBox.classList.add('active');
+    tfText.classList.add('active');
+  }, 1800);
+  setTimeout(function(){ overlay.classList.remove('active'); if(callback) callback(); }, 3500);
+}
+
+/* ===================== 輪迴模式 ===================== */
+function getPlayerMaxHP(card){ if(!card) return 70; return CARD_HP[card.rarity] || 70; }
+
+function enterReincarnation(){
+  if(state.team.length === 0){
+    if(state.activeCardId && state.collection[state.activeCardId] > 0){ state.team.push(state.activeCardId); }
+    else{
+      state.collection['n_act'] = (state.collection['n_act'] || 0) + 1;
+      state.team.push('n_act');
+    }
+    state.activeCardId = state.team[0];
+    saveLocal();
+  }
+  var card = getActiveCard();
+  var maxHP = getPlayerMaxHP(card);
+  state.reincarnation = { index: 0, isActive: true, playerHP: maxHP, playerMaxHP: maxHP, locked: false };
+  showView('reincarnation');
+  renderReincarnationQuestion();
+}
+function exitReincarnation(){
+  state.reincarnation.isActive = false;
+  showView('level');
+}
+function updateReincHpUI(){
+  var r = state.reincarnation;
+  var bar = $('#reinc-player-hp-bar'), txt = $('#reinc-player-hp-text');
+  if(bar) bar.style.width = Math.max(0, (r.playerHP / r.playerMaxHP * 100)) + '%';
+  if(txt) txt.textContent = Math.max(0, r.playerHP) + ' / ' + r.playerMaxHP;
+}
+function renderReincarnationQuestion(){
+  var r = state.reincarnation;
+  if(!r.isActive) return;
+  if(r.index >= REINCARNATION_QUESTIONS.length){
+    state.dust += 500; addExp(15); saveLocal(); updateHUD();
+    toast('🎉 恭喜通過輪迴模式！獲得 500 鑽石 + 15 經驗！');
+    r.isActive = false;
+    setTimeout(function(){ exitReincarnation(); }, 1500);
+    return;
+  }
+  var q = REINCARNATION_QUESTIONS[r.index];
+  var enemy = REINC_ENEMIES[r.index % REINC_ENEMIES.length];
+
+  safeText('#reinc-progress', (r.index + 1));
+  safeText('#reinc-floor-num', (r.index + 1));
+  safeText('#reinc-enemy-emoji', enemy.emoji);
+  var nameEl = $('#reinc-enemy-name');
+  if(nameEl) nameEl.innerHTML = enemy.name + ' ' + getElementBadge(enemy.element);
+  var enemyEmojiEl = $('#reinc-enemy-emoji'); if(enemyEmojiEl) enemyEmojiEl.classList.remove('defeated');
+  var enemyHpBar = $('#reinc-enemy-hp-bar'); if(enemyHpBar) enemyHpBar.style.width = '100%';
+  safeText('#reinc-question', q.q);
+
+  var skillSlot = $('#reinc-skill-slot');
+  if(skillSlot){
+    var activeCard = getActiveCard();
+    if(activeCard && activeCard.rarity === 'RN'){
+      skillSlot.innerHTML = '<button class="skill-btn skill-admin" onclick="useReincAdminSkill()">👑 一鍵通關</button>';
+    }else{ skillSlot.innerHTML = ''; }
+  }
+  var optionsEl = $('#reinc-options');
+  if(optionsEl){
+    optionsEl.innerHTML = q.options.map(function(opt, i){
+      return '<button class="reinc-opt" onclick="answerReincarnation(' + i + ')">' + opt + '</button>';
+    }).join('');
+  }
+  r.locked = false;
+  updateReincHpUI();
+}
+function answerReincarnation(choice){
+  var r = state.reincarnation;
+  if(!r.isActive || r.locked) return;
+  var q = REINCARNATION_QUESTIONS[r.index];
+  var opts = document.querySelectorAll('.reinc-opt');
+  r.locked = true;
+  opts.forEach(function(btn){ btn.disabled = true; });
+
+  var qKey = 'reinc:' + q.q;
+  recordQuestionResult(qKey, choice === q.answer);
+
+  if(choice === q.answer){
+    opts[choice].classList.add('correct');
+    var enemyEmojiEl = $('#reinc-enemy-emoji'); if(enemyEmojiEl) enemyEmojiEl.classList.add('defeated');
+    var enemyHpBar = $('#reinc-enemy-hp-bar'); if(enemyHpBar) enemyHpBar.style.width = '0%';
+    toast('⚡ 秒殺！');
+    setTimeout(function(){ r.index++; renderReincarnationQuestion(); }, 1000);
+  }else{
+    opts[choice].classList.add('wrong');
+    opts[q.answer].classList.add('correct');
+    r.playerHP = Math.max(0, r.playerHP - 10);
+    updateReincHpUI();
+    if(r.playerHP <= 0){
+      toast('💀 HP 歸零，挑戰失敗！');
+      setTimeout(function(){ r.isActive = false; showView('level'); }, 2000);
+    }else{
+      toast('❌ 答錯了！-10 HP，請再試一次');
+      setTimeout(function(){
+        r.locked = false;
+        opts.forEach(function(btn){ btn.disabled = false; btn.classList.remove('wrong', 'correct'); });
+      }, 1500);
+    }
+  }
+}
+function useReincAdminSkill(){
+  var r = state.reincarnation;
+  if(!r.isActive || r.locked) return;
+  var card = getActiveCard();
+  if(!card || card.rarity !== 'RN') return;
+  r.isActive = false;
+  state.dust += 500;
+  addExp(15);
+  saveLocal(); updateHUD();
+  toast('👑 一鍵通關！完成 30 層輪迴！+15 經驗');
+  var optionsEl = $('#reinc-options');
+  if(optionsEl){
+    optionsEl.innerHTML = '<div style="text-align:center;padding:30px 16px;font-size:20px;color:#ffd166;font-weight:900;line-height:1.8;font-family:var(--font-brush)">👑 一鍵通關！<br><span style="font-size:15px;color:#c8cdf0;display:block;margin-top:10px;font-weight:700;font-family:var(--font-body)">恭喜通過輪迴模式！獲得 500 鑽石 + 15 經驗！</span></div>';
+  }
+  var skillSlot = $('#reinc-skill-slot'); if(skillSlot) skillSlot.innerHTML = '';
+  setTimeout(function(){ exitReincarnation(); }, 2200);
+}
+
+/* ===================== 森林探險 ===================== */
+function enterAdventure(){
+  showLoading(function(){
+    if(state.team.length === 0){
+      if(state.activeCardId && state.collection[state.activeCardId] > 0){ state.team.push(state.activeCardId); }
+      else{
+        state.collection['n_act'] = (state.collection['n_act'] || 0) + 1;
+        state.team.push('n_act');
+      }
+      state.activeCardId = state.team[0];
+      saveLocal();
+    }
+    showView('game');
+    state.gameActive = true;
+    state.moveDist = 0;
+    state.px = WORLD_SIZE/2; state.py = WORLD_SIZE/2;
+
+    state.teamFollowers = [];
+    for(var i=0; i<state.team.length; i++){
+      var cid = state.team[i];
+      if(cid && state.collection[cid] > 0){
+        state.teamFollowers.push({ cardId: cid, x: state.px, y: state.py + 70 + i * 44, dir: 1 });
+      }
+    }
+    var pcImg = $('#player-img');
+    var pcEmoji = $('#player-emoji');
+    var playerImg = state.playerGender === 'female' ? ASSETS.playerFemale : ASSETS.playerMale;
+    if(playerImg){
+      pcImg.src = playerImg;
+      pcImg.onload = function(){ pcImg.style.display = 'block'; pcEmoji.style.display = 'none'; };
+      pcImg.onerror = function(){ pcImg.style.display = 'none'; pcEmoji.style.display = 'block'; };
+    }else{
+      pcImg.style.display = 'none'; pcEmoji.style.display = 'block';
+      pcEmoji.textContent = state.playerGender === 'female' ? '👸' : '🤴';
+    }
+    renderTeamFollowers();
+    updatePlayerDom(); updateFollowerDom(); updateCamera();
+    updateHUD(); updateHomeBtn();
+    toast('隊伍已出動！走動探索吧！');
+    state.lastTime = performance.now();
+    if(state.rafId) cancelAnimationFrame(state.rafId);
+    state.rafId = requestAnimationFrame(gameLoop);
+  }, 1200);
+}
+function renderTeamFollowers(){
+  for(var i=0; i<3; i++){
+    var el = document.getElementById('follower-wrap-' + i);
+    if(!el) continue;
+    var f = state.teamFollowers[i];
+    if(!f){ el.style.display = 'none'; continue; }
+    el.style.display = 'flex';
+    var img = el.querySelector('.follower-img');
+    var emoji = el.querySelector('.follower-emoji');
+    var c = getCard(f.cardId);
+    if(c && c.img){ img.src = c.img; img.style.display = 'block'; emoji.style.display = 'none'; }
+    else if(c){ img.style.display = 'none'; emoji.style.display = 'block'; emoji.textContent = c.emoji; }
+  }
+}
+function exitToLevelSelect(){
+  state.gameActive = false;
+  if(state.rafId){ cancelAnimationFrame(state.rafId); state.rafId = null; }
+  showView('gaoxiao');
+}
+function updatePlayerDom(){
+  var el = $('#player-wrap');
+  if(el){ el.style.left = (state.px - 40) + 'px'; el.style.top = (state.py - 80) + 'px'; }
+}
+function updateFollowerDom(){
+  for(var i=0; i<state.teamFollowers.length; i++){
+    var f = state.teamFollowers[i];
+    var el = document.getElementById('follower-wrap-' + i);
+    if(el && f){
+      el.style.left = (f.x - 31) + 'px';
+      el.style.top = (f.y - 62) + 'px';
+      if(f.dir < 0) el.style.transform = 'scaleX(-1)';
+      else if(f.dir > 0) el.style.transform = 'scaleX(1)';
+    }
+  }
+}
+function updateCamera(){
+  var camX = state.px - window.innerWidth/2;
+  var camY = state.py - window.innerHeight/2;
+  if(WORLD_SIZE <= window.innerWidth) camX = (WORLD_SIZE - window.innerWidth)/2;
+  else camX = Math.max(0, Math.min(WORLD_SIZE - window.innerWidth, camX));
+  if(WORLD_SIZE <= window.innerHeight) camY = (WORLD_SIZE - window.innerHeight)/2;
+  else camY = Math.max(0, Math.min(WORLD_SIZE - window.innerHeight, camY));
+  var fw = $('#forest-world');
+  if(fw) fw.style.transform = 'translate(' + (-camX) + 'px, ' + (-camY) + 'px)';
+}
+function gameLoop(time){
+  if(!state.gameActive){ state.rafId = null; return; }
+  state.rafId = requestAnimationFrame(gameLoop);
+  var dt = Math.min((time - state.lastTime)/1000, 0.05);
+  state.lastTime = time;
+  if(state.battle) return;
+
+  var dx = 0, dy = 0;
+  if(state.keys['w']||state.keys['arrowup']) dy -= 1;
+  if(state.keys['s']||state.keys['arrowdown']) dy += 1;
+  if(state.keys['a']||state.keys['arrowleft']) dx -= 1;
+  if(state.keys['d']||state.keys['arrowright']) dx += 1;
+  dx += state.joystick.dx; dy += state.joystick.dy;
+
+  var len = Math.hypot(dx, dy);
+  var moved = false;
+  if(len > 0.1){
+    dx /= len; dy /= len;
+    var move = PLAYER_SPEED * dt;
+    state.px += dx * move; state.py += dy * move;
+    state.px = Math.max(50, Math.min(WORLD_SIZE-50, state.px));
+    state.py = Math.max(50, Math.min(WORLD_SIZE-50, state.py));
+    state.moveDist += move; moved = true;
+    var el = $('#player-wrap');
+    if(el){ if(dx < -0.15) el.style.transform = 'scaleX(-1)'; else if(dx > 0.15) el.style.transform = 'scaleX(1)'; }
+  }
+  var prevX = state.px, prevY = state.py;
+  for(var i=0; i<state.teamFollowers.length; i++){
+    var f = state.teamFollowers[i];
+    var ndx = prevX - f.x, ndy = prevY - f.y;
+    f.x += ndx * 0.1; f.y += ndy * 0.1;
+    if(ndx < -0.5) f.dir = -1; else if(ndx > 0.5) f.dir = 1;
+    prevX = f.x; prevY = f.y;
+  }
+  if(moved){ updatePlayerDom(); updateCamera(); }
+  updateFollowerDom();
+  if(state.moveDist > 700){
+    state.moveDist = 0;
+    var rand = Math.random();
+    if(rand < 0.45 && !state.encounterLock) triggerEncounter();
+    else if(rand < 0.7) triggerRandomEvent();
+  }
+}
+function triggerRandomEvent(){
+  var events = [
+    { type:'dust', val:15, msg:'💎 你在地上撿到了 15 塵石！' },
+    { type:'exp', val:5, msg:'✨ 你領悟了森林的奧秘，經驗 +5！' },
+    { type:'trap', val:-10, msg:'💥 踩到了捕獸夾，經驗 -10！' },
+    { type:'heal', val:0, msg:'🌿 你發現了一株小草，感覺精神百倍！' }
+  ];
+  var ev = events[Math.floor(Math.random() * events.length)];
+  toast(ev.msg);
+  if(ev.type === 'dust'){ state.dust += ev.val; updateHUD(); saveLocal(); }
+  else if(ev.type === 'exp'){ addExp(ev.val); updatePlayerCard(); saveLocal(); }
+  else if(ev.type === 'trap'){ subExp(Math.abs(ev.val)); updatePlayerCard(); saveLocal(); }
+}
+function triggerEncounter(){
+  if(state.encounterLock || state.battle) return;
+  state.encounterLock = true;
+  var banner = $('#encounter-banner');
+  if(banner) banner.classList.add('show');
+  setTimeout(function(){
+    if(banner) banner.classList.remove('show');
+    state.encounterLock = false;
+    startBattle('random');
+  }, 800);
+}
+
+/* ===================== 輸入 ===================== */
+function setupInput(){
+  window.addEventListener('keydown', function(e){
+    if(!e || typeof e.key !== 'string') return;
+    var k = e.key.toLowerCase();
+    if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].indexOf(k) >= 0){
+      state.keys[k] = true;
+      if(k.indexOf('arrow') === 0) e.preventDefault();
+    }
+  });
+  window.addEventListener('keyup', function(e){
+    if(!e || typeof e.key !== 'string') return;
+    var k = e.key.toLowerCase();
+    state.keys[k] = false;
+  });
+  var zone = $('#joystick-zone'), stick = $('#joystick-stick');
+  if(zone && stick){
+    var aid = null;
+    zone.addEventListener('touchstart', function(e){ e.preventDefault(); var t = e.changedTouches[0]; aid = t.identifier; updateJoystick(t); }, {passive:false});
+    zone.addEventListener('touchmove', function(e){ e.preventDefault(); for(var i=0;i<e.changedTouches.length;i++){ var t = e.changedTouches[i]; if(t.identifier === aid) updateJoystick(t); } }, {passive:false});
+    function end(e){
+      for(var i=0;i<e.changedTouches.length;i++){
+        if(e.changedTouches[i].identifier === aid){ aid = null; state.joystick.dx = 0; state.joystick.dy = 0; stick.style.transform = 'translate(0,0)'; }
+      }
+    }
+    zone.addEventListener('touchend', end);
+    zone.addEventListener('touchcancel', end);
+  }
+  window.addEventListener('resize', function(){ if(state.gameActive) updateCamera(); });
+}
+function updateJoystick(t){
+  var zone = $('#joystick-zone'), stick = $('#joystick-stick');
+  if(!zone || !stick) return;
+  var r = zone.getBoundingClientRect();
+  var cx = r.left + r.width/2, cy = r.top + r.height/2;
+  var dx = t.clientX - cx, dy = t.clientY - cy;
+  var max = r.width/2 - 10, d = Math.hypot(dx, dy);
+  if(d > max){ dx = dx/d*max; dy = dy/d*max; }
+  stick.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+  state.joystick.dx = dx/max; state.joystick.dy = dy/max;
+}
+
+/* ===================== 戰鬥 ===================== */
+function startBattle(source){
+  if(state.battle) return;
+  switchBgm('battle');
+
+  if(!getActiveCard()){
+    state.collection['n_act'] = (state.collection['n_act'] || 0) + 1;
+    state.team.push('n_act');
+    state.activeCardId = state.team[0];
+  }
+
+  var enemy = REINC_ENEMIES[Math.floor(Math.random()*REINC_ENEMIES.length)];
+  var typePool = Object.keys(TYPES).filter(function(k){ return k !== '全能' && k !== '情緒'; });
+
+  state.battle = {
+    source:source, phase:'question',
+    playerHP:100, playerMax:100, enemyHP:100, enemyMax:100,
+    enemyType:typePool[Math.floor(Math.random()*typePool.length)],
+    enemyElement:enemy.element,
+    enemyName:enemy.name,
+    enemyEmoji:enemy.emoji,
+    used:[], current:null, locked:false, correct:0, total:0, lastExp:null, lastExpBonus:false, lastElemRel:'neutral',
+    skillsUsed:{ ssr:false, unknown:false, admin:false }
+  };
+
+  updateHomeBtn();
+
+  var allyImg = $('#battle-ally-img');
+  var allyEmoji = $('#battle-ally-emoji');
+  var leadCard = getActiveCard();
+  if(leadCard && leadCard.img){
+    allyImg.src = leadCard.img;
+    allyImg.onload = function(){ allyImg.style.display = 'block'; allyEmoji.style.display = 'none'; };
+    allyImg.onerror = function(){ allyImg.style.display = 'none'; allyEmoji.style.display = 'block'; };
+  }else{
+    var pImg = state.playerGender === 'female' ? ASSETS.playerFemale : ASSETS.playerMale;
+    if(pImg){
+      allyImg.src = pImg;
+      allyImg.onload = function(){ allyImg.style.display = 'block'; allyEmoji.style.display = 'none'; };
+      allyImg.onerror = function(){ allyImg.style.display = 'none'; allyEmoji.style.display = 'block'; };
+    }else{
+      allyImg.style.display = 'none'; allyEmoji.style.display = 'block';
+      allyEmoji.textContent = state.playerGender === 'female' ? '👸' : '🤴';
+    }
+  }
+
+  var enemyImg = $('#battle-enemy-img');
+  var enemyEmoji = $('#battle-enemy-emoji');
+  if(ASSETS.enemy){
+    enemyImg.src = ASSETS.enemy;
+    enemyImg.onload = function(){ enemyImg.style.display = 'block'; enemyEmoji.style.display = 'none'; };
+    enemyImg.onerror = function(){ enemyImg.style.display = 'none'; enemyEmoji.style.display = 'block'; };
+  }else{
+    enemyImg.style.display = 'none'; enemyEmoji.style.display = 'block';
+    enemyEmoji.textContent = enemy.emoji;
+  }
+
+  var wrapA = $('#battle-ally-wrap'); if(wrapA){ wrapA.style.transform = 'scale(1.3)'; wrapA.style.filter = ''; }
+  var wrapE = $('#battle-enemy-wrap'); if(wrapE){ wrapE.style.transform = 'scale(1.3)'; wrapE.style.filter = ''; }
+
+  var ov = $('#battle-overlay'); if(ov) ov.classList.add('active');
+  var br = $('#battle-result'); if(br) br.classList.remove('active');
+  nextQuestion();
+}
+
+function nextQuestion(){
+  var b = state.battle; if(!b) return;
+  var pool = QUESTIONS.filter(function(q){ return b.used.indexOf(q.text) < 0; });
+  if(!pool.length){ b.used = []; pool = QUESTIONS; }
+  var q = pool[Math.floor(Math.random()*pool.length)];
+  b.used.push(q.text); b.current = q; b.locked = false; b.phase = 'question';
+  renderBattleUI();
+}
+
+function renderBattleUI(){
+  var b = state.battle; if(!b) return;
+  var contentEl = $('#battle-content');
+  if(contentEl) contentEl.style.display = 'block';
+  var bottom = $('#battle-bottom');
+  if(bottom){
+    var oldFb = bottom.querySelector('.battle-feedback'); if(oldFb) oldFb.remove();
+    var oldBtn = bottom.querySelector('.next-btn'); if(oldBtn) oldBtn.remove();
+  }
+  var eb = $('#enemy-hp-bar'); if(eb) eb.style.width = (b.enemyHP/b.enemyMax*100)+'%';
+  safeText('#enemy-hp-text', Math.max(0, b.enemyHP));
+  var pb = $('#player-hp-bar'); if(pb) pb.style.width = (b.playerHP/b.playerMax*100)+'%';
+  safeText('#player-hp-text', Math.max(0, b.playerHP));
+
+  var q = b.current, et = TYPES[b.enemyType];
+  var oh = '';
+  if(q){
+    oh = ['外貌','語言','動作','心理','神態'].map(function(n){
+      var t = TYPES[n];
+      return '<button class="opt" style="--tc:' + t.color + '" data-answer="' + n + '" ' + (b.locked ? 'disabled' : '') + '>' + t.emoji + ' ' + n + '描寫</button>';
+    }).join('');
+  }
+  if(!contentEl) return;
+
+  var activeCard = getActiveCard();
+  var playerElem = activeCard ? activeCard.element : null;
+  var elemRel = getElementRelation(playerElem, b.enemyElement);
+
+  var relText = '';
+  if(elemRel === 'strong') relText = '✅ 我方克制敵方（造成傷害 ×1.2、受到傷害 ×0.8）';
+  else if(elemRel === 'weak') relText = '⚠️ 我方被敵方克制（造成傷害 ×0.8、受到傷害 ×1.2）';
+  else if(playerElem === '天地' || b.enemyElement === '天地') relText = '— 天地屬性，不受剋制';
+  else relText = '— 無相剋關係（傷害 ×1.0）';
+
+  var skillHtml = '';
+  if(activeCard){
+    if(activeCard.rarity === 'RN' && !b.skillsUsed.admin){
+      skillHtml = '<button class="skill-btn skill-admin" onclick="useAdminSkill()">👑 一鍵通關</button>';
+    }else if(activeCard.rarity === 'SSR' && !b.skillsUsed.ssr){
+      skillHtml = '<button class="skill-btn skill-ssr" onclick="useSSRSkill()">✨ 靈光一閃 (屏蔽一個錯誤答案)</button>';
+    }else if(activeCard.rarity === 'Unknown' && !b.skillsUsed.unknown){
+      skillHtml = '<button class="skill-btn skill-unknown" onclick="useUnknownSkill()">👁️ 神之預視 (直接給出正確答案)</button>';
+    }
+  }
+
+  contentEl.innerHTML =
+    skillHtml +
+    '<div class="battle-info-line">' +
+      'Q' + (b.total+1) + ' ・ ' +
+      '對手：<span style="color:#ff8a9a;font-weight:900">' + b.enemyEmoji + ' ' + b.enemyName + '</span> ' +
+      getElementBadge(b.enemyElement) +
+      ' ・ 出題：' + et.emoji + ' ' + b.enemyType + '描寫' +
+    '</div>' +
+    '<div class="elem-rel-line ' + elemRel + '">' +
+      '我方 ' + getElementBadge(playerElem) +
+      ' vs 敵方 ' + getElementBadge(b.enemyElement) +
+      ' ・ ' + relText +
+    '</div>' +
+    '<div class="q-text">「' + (q ? q.text : '') + '」</div>' +
+    '<div class="options">' + oh + '</div>';
+
+  var btns = contentEl.querySelectorAll('.opt');
+  for(var i=0;i<btns.length;i++){
+    btns[i].addEventListener('click', function(){ answerQuestion(this.getAttribute('data-answer')); });
+  }
+}
+
+function useSSRSkill(){
+  var b = state.battle;
+  if(!b || b.locked || b.skillsUsed.ssr) return;
+  var correctAnswer = b.current.answer;
+  var opts = document.querySelectorAll('.opt');
+  var wrongOpts = [];
+  opts.forEach(function(opt){
+    if(opt.getAttribute('data-answer') !== correctAnswer && !opt.disabled) wrongOpts.push(opt);
+  });
+  if(wrongOpts.length > 0){
+    var randomWrong = wrongOpts[Math.floor(Math.random() * wrongOpts.length)];
+    randomWrong.disabled = true;
+    b.skillsUsed.ssr = true;
+    toast('✨ 已屏蔽一個錯誤選項！');
+    var skillBtn = document.querySelector('.skill-btn'); if(skillBtn) skillBtn.remove();
+  }
+}
+function useUnknownSkill(){
+  var b = state.battle;
+  if(!b || b.locked || b.skillsUsed.unknown) return;
+  b.skillsUsed.unknown = true;
+  toast('👁️ 神之預視！直接看穿正確答案！');
+  var skillBtn = document.querySelector('.skill-btn'); if(skillBtn) skillBtn.remove();
+  answerQuestion(b.current.answer);
+}
+function useAdminSkill(){
+  var b = state.battle;
+  if(!b || b.locked || !b.current || b.skillsUsed.admin) return;
+  b.skillsUsed.admin = true;
+  b.locked = true;
+  b.enemyHP = 0;
+  var eb = $('#enemy-hp-bar'); if(eb) eb.style.width = '0%';
+  safeText('#enemy-hp-text', 0);
+  var enemyWrap = $('#battle-enemy-wrap');
+  if(enemyWrap){ enemyWrap.style.transform = 'scale(0)'; enemyWrap.style.filter = 'brightness(3)'; }
+  showDamageNumber(enemyWrap, 9999, true, '#FF1493');
+  toast('👑 一鍵通關！');
+  setTimeout(function(){ if(state.battle === b) endBattle(true); }, 800);
+}
+
+function answerQuestion(choice){
+  var b = state.battle;
+  if(!b || b.locked || !b.current) return;
+  b.locked = true; b.phase = 'attack';
+
+  var q = b.current;
+  var pl = getActiveCard();
+  var rar = pl ? pl.rarity : 'N';
+  var evoBonus = pl ? getEvoBonus(pl.id, pl.rarity) : 0;
+  var playerElem = pl ? pl.element : null;
+  var enemyElem = b.enemyElement;
+  var elemRel = getElementRelation(playerElem, enemyElem);
+
+  var qKey = 'battle:' + q.text;
+  var errRateBefore = getQuestionErrorRate(qKey);
+  var ok = (choice === q.answer);
+  recordQuestionResult(qKey, ok);
+
+  var dmg = 0, taken = 0, elemStrong = false, elemWeak = false;
+  b.lastExpBonus = false;
+
+  if(ok){
+    b.correct++;
+    dmg = 40;
+    if(elemRel === 'strong'){ dmg = Math.floor(dmg * 1.2); elemStrong = true; }
+    else if(elemRel === 'weak'){ dmg = Math.floor(dmg * 0.8); elemWeak = true; }
+    dmg = Math.floor(dmg * (1 + evoBonus));
+    b.enemyHP = Math.max(0, b.enemyHP - dmg);
+    var eg = (EXP_GAIN[rar] != null) ? EXP_GAIN[rar] : 5;
+    if(errRateBefore > 0.5){ eg = Math.ceil(eg * 1.1); b.lastExpBonus = true; }
+    addExp(eg); b.lastExp = eg;
+  }else{
+    taken = 25;
+    if(elemRel === 'strong'){ taken = Math.floor(taken * 0.8); elemStrong = true; }
+    else if(elemRel === 'weak'){ taken = Math.floor(taken * 1.2); elemWeak = true; }
+    b.playerHP = Math.max(0, b.playerHP - taken);
+    var el = (EXP_LOSS[rar] != null) ? EXP_LOSS[rar] : 10;
+    subExp(el); b.lastExp = -el;
+  }
+  b.total++;
+  b.lastElemRel = elemRel;
+
+  playAttackAnimation(ok ? 'player' : 'enemy', ok ? dmg : taken, elemStrong);
+  showBattleFeedback(ok, q, dmg, taken, elemStrong, elemWeak, elemRel);
+
+  var eb = $('#enemy-hp-bar'); if(eb) eb.style.width = (b.enemyHP/b.enemyMax*100)+'%';
+  safeText('#enemy-hp-text', Math.max(0, b.enemyHP));
+  var pb = $('#player-hp-bar'); if(pb) pb.style.width = (b.playerHP/b.playerMax*100)+'%';
+  safeText('#player-hp-text', Math.max(0, b.playerHP));
+}
+
+function playAttackAnimation(attacker, dmg, crit){
+  var ally = $('#battle-ally-wrap'), enemy = $('#battle-enemy-wrap'), flash = $('#hit-flash');
+  if(!ally || !enemy) return;
+  if(attacker === 'player'){
+    ally.style.transform = 'translate(90px, -60px) scale(1.5)';
+    setTimeout(function(){
+      ally.style.transform = 'translate(0, 0) scale(1.3)';
+      if(flash) flash.classList.add('on');
+      setTimeout(function(){ if(flash) flash.classList.remove('on'); }, 120);
+      enemy.style.transform = 'translate(18px, -12px) scale(1.45)';
+      enemy.style.filter = 'brightness(2) hue-rotate(-30deg)';
+      showDamageNumber(enemy, dmg, crit);
+      setTimeout(function(){ enemy.style.transform = 'translate(0, 0) scale(1.3)'; enemy.style.filter = ''; }, 260);
+    }, 180);
+  }else{
+    enemy.style.transform = 'translate(-90px, 60px) scale(1.5)';
+    setTimeout(function(){
+      enemy.style.transform = 'translate(0, 0) scale(1.3)';
+      if(flash) flash.classList.add('on');
+      setTimeout(function(){ if(flash) flash.classList.remove('on'); }, 150);
+      ally.style.transform = 'translate(-18px, 12px) scale(1.45)';
+      ally.style.filter = 'brightness(2) hue-rotate(-30deg)';
+      showDamageNumber(ally, dmg, false, '#ff8a9a');
+      setTimeout(function(){ ally.style.transform = 'translate(0, 0) scale(1.3)'; ally.style.filter = ''; }, 260);
+    }, 180);
+  }
+}
+function showDamageNumber(targetEl, dmg, crit, color){
+  if(!targetEl) return;
+  var rect = targetEl.getBoundingClientRect();
+  var el = document.createElement('div');
+  el.className = 'damage-num';
+  el.textContent = (crit ? '暴擊 ' : '') + dmg;
+  el.style.left = (rect.left + rect.width/2 - 24) + 'px';
+  el.style.top = (rect.top - 10) + 'px';
+  el.style.color = color || '#ffd166';
+  if(crit) el.style.fontSize = '40px';
+  document.body.appendChild(el);
+  setTimeout(function(){ el.remove(); }, 1100);
+}
+function showBattleFeedback(ok, q, dmg, taken, elemStrong, elemWeak, elemRel){
+  var b = state.battle;
+  var contentEl = $('#battle-content'); if(contentEl) contentEl.style.display = 'none';
+  var bottom = $('#battle-bottom'); if(!bottom) return;
+  var oldFb = bottom.querySelector('.battle-feedback'); if(oldFb) oldFb.remove();
+  var oldBtn = bottom.querySelector('.next-btn'); if(oldBtn) oldBtn.remove();
+
+  var expLine = '';
+  if(b && b.lastExp !== null && b.lastExp !== undefined){
+    var ev = b.lastExp;
+    var bonusNote = (b.lastExpBonus ? '（錯誤率>50%，獎勵+10%）' : '');
+    if(ev > 0) expLine = '<div style="font-size:14px;font-weight:900;color:#7cffb0;margin-top:6px;font-family:var(--font-body)">✨ 經驗 +' + ev + '（Lv.' + state.level + '）' + bonusNote + '</div>';
+    else if(ev < 0) expLine = '<div style="font-size:14px;font-weight:900;color:#ff8a9a;margin-top:6px;font-family:var(--font-body)">💔 經驗 ' + ev + '（Lv.' + state.level + '）</div>';
+    else expLine = '<div style="font-size:14px;font-weight:900;color:#9aa0c4;margin-top:6px;font-family:var(--font-body)">經驗不變</div>';
+  }
+
+  var elemLine = '';
+  if(elemRel === 'strong') elemLine = '<div style="font-size:13px;font-weight:900;color:#a8ffcb;margin-top:6px;font-family:var(--font-body)">🌿 五行克制：我方克制敵方（傷害 ×1.2 / 受傷 ×0.8）</div>';
+  else if(elemRel === 'weak') elemLine = '<div style="font-size:13px;font-weight:900;color:#ffb0b3;margin-top:6px;font-family:var(--font-body)">🔥 五行被克：敵方克制我方（傷害 ×0.8 / 受傷 ×1.2）</div>';
+
+  var dmgNote = '';
+  if(elemStrong) dmgNote = ok ? '（五行克制 ⚡）' : '（五行克制，受傷減少）';
+  if(elemWeak) dmgNote = ok ? '（五行被克，傷害降低）' : '（五行被克，受傷增加）';
+
+  var fb = document.createElement('div');
+  fb.className = 'battle-feedback ' + (ok ? 'ok' : 'bad');
+  fb.innerHTML =
+    '<h4>' + (ok ? '✅ 答對了！' : '❌ 答錯了') + '</h4>' +
+    '<p><b style="color:#ffd166">正解：' + q.answer + '描寫。</b><br>' + q.explain + '</p>' +
+    '<div class="dmg-line">' + (ok
+      ? ('你造成 ' + dmg + ' 點傷害 ' + dmgNote)
+      : ('你受到 ' + taken + ' 點傷害 ' + dmgNote)) + '</div>' +
+    elemLine + expLine;
+  bottom.appendChild(fb);
+
+  var nb = document.createElement('button');
+  nb.className = 'next-btn';
+  nb.textContent = (b && (b.enemyHP <= 0 || b.playerHP <= 0)) ? '查看結果' : '下一題 ➔';
+  nb.addEventListener('click', afterBattleFeedback);
+  bottom.appendChild(nb);
+  updatePlayerCard();
+}
+function afterBattleFeedback(){
+  var b = state.battle; if(!b) return;
+  if(b.enemyHP <= 0){ endBattle(true); return; }
+  if(b.playerHP <= 0){ endBattle(false); return; }
+  nextQuestion();
+}
+function endBattle(win){
+  var b = state.battle; if(!b) return;
+  b.phase = 'result';
+  var reward = win ? 20 : 5;
+  state.dust += reward;
+  addExp(15);
+  if(b.correct > state.bestScore){ state.bestScore = b.correct; }
+  updateHUD(); saveLocal();
+  var br = $('#battle-result'); if(br) br.classList.add('active');
+  var rc = $('#result-card');
+  if(rc){
+    rc.innerHTML =
+      '<div class="icon">' + (win ? '🏆' : '💀') + '</div>' +
+      '<h2>' + (win ? '挑戰成功！' : '挑戰失敗…') + '</h2>' +
+      '<p>本局答對 <b style="color:#ffd166">' + b.correct + '</b> / ' + b.total + ' 題 <br>' +
+      '歷史最佳：<b style="color:#7cffb0">' + state.bestScore + ' 題</b><br>' +
+      '目前等級：<b style="color:#a99bff">Lv.' + state.level + '</b> ・ 經驗 ' + fmtNum(state.exp) + ' / ' + (state.level>=MAX_LEVEL ? 'MAX' : fmtNum(expNeededForLevel(state.level))) + '<br>' +
+      '完成關卡經驗：<b style="color:#7cffb0">+15</b><br>' +
+      (win ? ('獲得 <b style="color:#7cffb0">+' + reward + ' 塵石</b>') : '再複習一下五種描寫手法吧！') + '</p>' +
+      '<button class="btn" id="close-battle-btn">回到森林</button>';
+    var cb = $('#close-battle-btn'); if(cb) cb.addEventListener('click', closeBattle);
+  }
+  state.battle = null;
+  updatePlayerCard(); updateHomeBtn();
+}
+function closeBattle(){
+  var ov = $('#battle-overlay'); if(ov) ov.classList.remove('active');
+  var br = $('#battle-result'); if(br) br.classList.remove('active');
+  switchBgm('game');
+  state.lastTime = performance.now();
+  updateHomeBtn();
+}
+
+/* ===================== 禮包 ===================== */
+function openGiftModal(){
+  closeSettings();
+  var input = $('#gift-input'); if(input) input.value = '';
+  var msg = $('#gift-msg'); if(msg){ msg.textContent = ''; msg.className = 'gift-msg'; }
+  var m = $('#gift-modal'); if(m) m.classList.add('active');
+  setTimeout(function(){ if(input) input.focus(); }, 60);
+}
+function closeGiftModal(){ var m = $('#gift-modal'); if(m) m.classList.remove('active'); }
+
+function redeemGift(){
+  var input = $('#gift-input'), msg = $('#gift-msg');
+  if(!input) return;
+  var code = (input.value || '').trim().toLowerCase();
+  if(!code){ if(msg){ msg.textContent = '請輸入兌換碼'; msg.className = 'gift-msg err'; } return; }
+  var uid = state.user ? (state.user.email || 'anon').toLowerCase() : 'anon';
+  var isGM = state.gmMode || (state.user && state.user.email === 'gm0101');
+
+  if(code === 'happy'){
+    var usedKey = 'rwxx_gift_happy_' + uid;
+    if(!isGM && SafeStorage.get(usedKey) === '1'){ if(msg){ msg.textContent = '此兌換碼已被使用'; msg.className = 'gift-msg err'; } return; }
+    if(!isGM) SafeStorage.set(usedKey, '1');
+    state.dust += 5000; saveLocal(); updateHUD();
+    if(msg){ msg.textContent = '🎉 兌換成功！獲得 5000 塵石！'; msg.className = 'gift-msg ok'; }
+    toast('🎁 兌換成功！+5000 塵石');
+    setTimeout(closeGiftModal, 1200);
+    return;
+  }
+  if(code === 'hoilam'){
+    state.dust += 10000; saveLocal(); updateHUD();
+    if(msg){ msg.textContent = '🎉 兌換成功！獲得 10000 塵石！(可重複使用)'; msg.className = 'gift-msg ok'; }
+    toast('🎉 兌換成功！+10000 塵石');
+    setTimeout(function(){ if(input) input.value = ''; if(msg){ msg.textContent = ''; msg.className = 'gift-msg'; } if(input) input.focus(); }, 1500);
+    return;
+  }
+  if(code === 'lmscps'){
+    var usedKey2 = 'rwxx_gift_lmscps_' + uid;
+    if(!isGM && SafeStorage.get(usedKey2) === '1'){ if(msg){ msg.textContent = '此兌換碼已被使用'; msg.className = 'gift-msg err'; } return; }
+    var ssrPool = CARDS.filter(function(c){ return c.rarity === 'SSR'; });
+    if(ssrPool.length > 0){
+      var randomSSR = ssrPool[Math.floor(Math.random() * ssrPool.length)];
+      state.collection[randomSSR.id] = (state.collection[randomSSR.id] || 0) + 1;
+      if(!isGM) SafeStorage.set(usedKey2, '1');
+      saveLocal(); updateHUD();
+      if(msg){ msg.textContent = '🎉 兌換成功！獲得 SSR：' + randomSSR.name; msg.className = 'gift-msg ok'; }
+      toast('✨ 恭喜獲得 SSR：' + randomSSR.name);
+      setTimeout(function(){ closeGiftModal(); if(msg){ msg.textContent = ''; msg.className = 'gift-msg'; } if(input) input.value = ''; }, 1500);
+    }
+    return;
+  }
+  if(code === 'yv1218'){
+    var gainedSummary = { ssr:0, unknown:0, normal:0 };
+    CARDS.forEach(function(c){
+      if(c.id === 'rn_admin') return;
+      if(c.rarity === 'SSR'){
+        state.collection[c.id] = (state.collection[c.id] || 0) + 1;
+        gainedSummary.ssr++;
+      }else if(c.id === 'unknown_1'){
+        state.collection[c.id] = (state.collection[c.id] || 0) + 1;
+        gainedSummary.unknown++;
+      }else{
+        state.collection[c.id] = (state.collection[c.id] || 0) + 10;
+        gainedSummary.normal++;
+      }
+    });
+    state.dust += 10000;
+    saveLocal(); updateHUD();
+    if(msg){
+      msg.textContent = '🎉 兌換成功！SSR×' + gainedSummary.ssr + '（各+1）、梁老師+1、其餘卡牌各+10，並獲得 10000 鑽石！';
+      msg.className = 'gift-msg ok';
+    }
+    toast('🎁 兌換成功！SSR/梁老師 +1，其他卡 +10，鑽石 +10000');
+    setTimeout(function(){ closeGiftModal(); if(msg){ msg.textContent = ''; msg.className = 'gift-msg'; } if(input) input.value = ''; }, 1800);
+    return;
+  }
+  if(code === 'test'){
+    if(msg){ msg.textContent = '唔好諗住撞密碼啦，努力上堂啦'; msg.className = 'gift-msg err'; }
+    toast('唔好諗住撞密碼啦，努力上堂啦');
+    return;
+  }
+  if(msg){ msg.textContent = '❌ 兌換碼無效'; msg.className = 'gift-msg err'; }
+}
+
+/* ===================== 初始化 ===================== */
+function initApp(){
+  document.body.addEventListener('click', function(){
+    var bgm = document.getElementById('bgm');
+    if(bgm && bgm.paused && state.bgmVolume > 0) bgm.play().catch(function(){});
+  }, { once:true });
+
+  var savedBgm = parseInt(SafeStorage.get('lobby_bgm_index'), 10);
+  var maxBgm = (ASSETS.bgmLobbyList && ASSETS.bgmLobbyList.length) || 1;
+  if(!isNaN(savedBgm) && savedBgm >= 0 && savedBgm < maxBgm) state.lobbyBgmIndex = savedBgm;
+
+  loadCardImages();
+  loadHomeReturnIcon();
+  renderPoem();
+
+  var authSubmit = $('#auth-submit'); if(authSubmit) authSubmit.addEventListener('click', handleAuth);
+  var authSwitch = $('#auth-switch-btn'); if(authSwitch) authSwitch.addEventListener('click', toggleAuthMode);
+
+  ['auth-email','auth-password','auth-username'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('keydown', function(e){ if(e && e.key === 'Enter'){ e.preventDefault(); handleAuth(); } });
+  });
+
+  var giftInput = $('#gift-input');
+  if(giftInput) giftInput.addEventListener('keydown', function(e){
+    if(e && e.key === 'Enter'){ e.preventDefault(); redeemGift(); }
+    if(e && e.key === 'Escape'){ e.preventDefault(); closeGiftModal(); }
+  });
+
+  var avatarInput = document.getElementById('avatar-file-input');
+  if(avatarInput) avatarInput.addEventListener('change', handleAvatarFile);
+
+  setInterval(function(){
+    if(state.user && !state.gmMode){
+      state.playSeconds = (state.playSeconds || 0) + 1;
+      if(state.playSeconds >= 60){
+        state.playSeconds = 0;
+        state.playTime = (state.playTime || 0) + 1;
+        updatePlayerCard();
+        if(state.playTime % 5 === 0) saveLocal();
+      }
+    }
+  }, 1000);
+
+  window.addEventListener('beforeunload', function(){
+    if(state.user && !state.gmMode && state.user.email && GAS_API_URL){
+      try{
+        var payload = JSON.stringify({
+          action:'saveData', email:state.user.email, dust:state.dust,
+          playTime:state.playTime, collection:state.collection,
+          activeCardId:state.activeCardId || '', team:state.team,
+          bestScore:state.bestScore, level:state.level, exp:state.exp,
+          playerGender:state.playerGender, evolutions:state.evolutions, pity:state.pity,
+          checkin:state.checkin, questionStats:state.questionStats, avatar:state.avatar || ''
+        });
+        if(navigator.sendBeacon) navigator.sendBeacon(GAS_API_URL, new Blob([payload], {type:'text/plain;charset=utf-8'}));
+      }catch(e){}
+    }
+  });
+
+  updateBgmChoiceUI();
+  updateAuthUI(); setupInput(); updatePlayerCard(); updateHomeBtn(); updatePityDisplay();
+  updateCheckinUI();
+  setInvSort('element');
+}
+
+if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', initApp); }
+else{ initApp(); }
+
+/* ===================== 全域暴露 ===================== */
+window.showView = showView;
+window.goHome = goHome;
+window.doGacha = doGacha;
+window.closeGachaResult = closeGachaResult;
+window.setActiveCard = setActiveCard;
+window.enterAdventure = enterAdventure;
+window.exitToLevelSelect = exitToLevelSelect;
+window.logout = logout;
+window.logoutFromSettings = logoutFromSettings;
+window.openGiftModal = openGiftModal;
+window.closeGiftModal = closeGiftModal;
+window.redeemGift = redeemGift;
+window.triggerAvatarUpload = triggerAvatarUpload;
+window.toggleProfileMenu = toggleProfileMenu;
+window.closeProfileMenu = closeProfileMenu;
+window.openAvatarChoice = openAvatarChoice;
+window.closeAvatarChoice = closeAvatarChoice;
+window.chooseGender = chooseGender;
+window.openSettings = openSettings;
+window.closeSettings = closeSettings;
+window.changeVolume = changeVolume;
+window.switchInvTab = switchInvTab;
+window.openEvolution = openEvolution;
+window.closeEvolution = closeEvolution;
+window.doEvolution = doEvolution;
+window.doBatchEvolution = doBatchEvolution;
+window.updateEvoPreview = updateEvoPreview;
+window.useSSRSkill = useSSRSkill;
+window.useUnknownSkill = useUnknownSkill;
+window.useAdminSkill = useAdminSkill;
+window.openFusionModal = openFusionModal;
+window.closeFusionModal = closeFusionModal;
+window.openFusionConfirm = openFusionConfirm;
+window.closeConfirmFusion = closeConfirmFusion;
+window.confirmFusion = confirmFusion;
+window.enterReincarnation = enterReincarnation;
+window.exitReincarnation = exitReincarnation;
+window.answerReincarnation = answerReincarnation;
+window.useReincAdminSkill = useReincAdminSkill;
+window.toggleTeamMember = toggleTeamMember;
+window.removeFromTeam = removeFromTeam;
+window.setHomeReturnIcon = setHomeReturnIcon;
+window.uploadHomeReturnIcon = uploadHomeReturnIcon;
+window.loadHomeReturnIcon = loadHomeReturnIcon;
+window.setLobbyBgm = setLobbyBgm;
+window.updateBgmChoiceUI = updateBgmChoiceUI;
+window.setInvSort = setInvSort;
+window.cycleInvSort = cycleInvSort;
+window.selectGachaBanner = selectGachaBanner;
+window.openCheckin = openCheckin;
+window.closeCheckin = closeCheckin;
+window.claimCheckin = claimCheckin;
+window.openGMStats = openGMStats;
+window.closeGMStats = closeGMStats;
+window.showLockedCategory = showLockedCategory;
+</script>
+</body>
+</html>
